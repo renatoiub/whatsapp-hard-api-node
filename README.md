@@ -1,5 +1,6 @@
 Intruções:
 Baixar e instalar o node (testado na versão 21.3)<br>
+Baixar ou clonar código da api neste repositório (git clone)<br>
 Renomear o arquivo env.exemple para somente .env<br>
 instalar a as dependências usando npm i <br>
 Startar a aplicação usando: npm start. <br>
@@ -26,30 +27,21 @@ groups.update<br>
 group-participants.update<br>
 
 Documentação via postman:<br>
-<div class="postman-run-button"
-data-postman-action="collection/fork"
-data-postman-visibility="public"
-data-postman-var-1="26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848"
-data-postman-collection-url="entityId=26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848&entityType=collection&workspaceId=32ca4a82-f86c-46f6-a43b-d3b24ce8d8b9"></div>
-<script type="text/javascript">
-  (function (p,o,s,t,m,a,n) {
-    !p[s] && (p[s] = function () { (p[t] || (p[t] = [])).push(arguments); });
-    !o.getElementById(s+t) && o.getElementsByTagName("head")[0].appendChild((
-      (n = o.createElement("script")),
-      (n.id = s+t), (n.async = 1), (n.src = m), n
-    ));
-  }(window, document, "_pm", "PostmanRunObject", "https://run.pstmn.io/button.js"));
-</script>
+
+<ul dir="auto">
+
+<li><a href="https://elements.getpostman.com/redirect?entityId=26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848&entityType=collection" rel="nofollow"><img src="https://camo.githubusercontent.com/16a903fe0c8e857e22585b47d674a11dc7fd16a2d4ef6a2d0e932e70a62cb0d6/68747470733a2f2f72756e2e7073746d6e2e696f2f627574746f6e2e737667" alt="Run in Postman" data-canonical-src="https://run.pstmn.io/button.svg" style="max-width: 100%;"></a></li>
+</ul>
 
 <br><br> Informações adicionais:<br>
 A api não usa nenhum banco de dados.<br>
 O consumo médio de memória varia de quantidade de instâncias.<br>
 <br><br>
-Contribua com o projeto e receba atualizaçoes:
-Contact
-Developer: https://github.com/renatoiub/
-Email: renatoiub@live.com
-Instagram: @renatoiub.
-Contribua com o projeto e receba atualizações:
-Pix: empresa@estoqueintegrado.com
+Contribua com o projeto e receba atualizaçoes:<br>
+Contato:<br>
+Developer: https://github.com/renatoiub/<br>
+Email: renatoiub@live.com<br>
+Instagram: @renatoiub.<br>
+Contribua com o projeto e receba atualizações:<br>
+Pix: empresa@estoqueintegrado.com<br>
 
