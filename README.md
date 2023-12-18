@@ -29,8 +29,8 @@ group-participants.update<br>
 Documentação via postman:<br>
 
 <ul dir="auto">
-
-<li><a href="https://elements.getpostman.com/redirect?entityId=26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848&entityType=collection" rel="nofollow"><img src="https://camo.githubusercontent.com/16a903fe0c8e857e22585b47d674a11dc7fd16a2d4ef6a2d0e932e70a62cb0d6/68747470733a2f2f72756e2e7073746d6e2e696f2f627574746f6e2e737667" alt="Run in Postman" data-canonical-src="https://run.pstmn.io/button.svg" style="max-width: 100%;"></a></li>
+<li><a target="_blank" href="https://api.postman.com/collections/26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848?access_key=PMAT-01HHZBJN72MNQ4Z7J48CEFBCNP">Postman Json</a></li>
+<li><a target="_blank" href="https://elements.getpostman.com/redirect?entityId=26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848&entityType=collection" rel="nofollow"><img src="https://camo.githubusercontent.com/16a903fe0c8e857e22585b47d674a11dc7fd16a2d4ef6a2d0e932e70a62cb0d6/68747470733a2f2f72756e2e7073746d6e2e696f2f627574746f6e2e737667" alt="Run in Postman" data-canonical-src="https://run.pstmn.io/button.svg" style="max-width: 100%;"></a></li>
 </ul>
 
 <br><br> Informações adicionais:<br>
