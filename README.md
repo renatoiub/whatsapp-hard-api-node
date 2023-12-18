@@ -1,7 +1,7 @@
 Intruções:
 Baixar e instalar o node (testado na versão 21.3)<br>
 Baixar ou clonar código da api neste repositório (git clone)<br>
-Renomear o arquivo env.exemple para somente .env<br>
+Renomear o arquivo env.example para somente .env<br>
 instalar a as dependências usando npm i <br>
 Startar a aplicação usando: npm start. <br>
 
@@ -33,9 +33,88 @@ Documentação via postman:<br>
 <li><a target="_blank" href="https://elements.getpostman.com/redirect?entityId=26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848&entityType=collection" rel="nofollow"><img src="https://camo.githubusercontent.com/16a903fe0c8e857e22585b47d674a11dc7fd16a2d4ef6a2d0e932e70a62cb0d6/68747470733a2f2f72756e2e7073746d6e2e696f2f627574746f6e2e737667" alt="Run in Postman" data-canonical-src="https://run.pstmn.io/button.svg" style="max-width: 100%;"></a></li>
 </ul>
 
+<br>
+<br>
+<h3>Envio</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Envia texto</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Send Buttons</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Send Template</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Arquivos: audio - video - image - document - gif <br><br>base64: <code>true</code></td>
+<td>✔</td>
+</tr>
+	<tr>
+<td>Send Media URL</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Send Media File</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Convert audio and video to whatsapp format</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Resposta de mensagem</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Send Location</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Send List</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Send Link Preview</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Send Contact</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>Send Reaction - emoji</td>
+<td>✔</td>
+</tr>
+	<tr>
+<td>Get contacts</td>
+<td>✔</td>
+</tr>
+	<tr>
+<td>Grupos: Cria, entra, sai, adiciona contatos, remove contatos e admins. Marcação fantasma (ghostMention) true</td>
+<td>✔</td>
+</tr>
+</tbody>
+</table>
+
 <br><br> Informações adicionais:<br>
 A api não usa nenhum banco de dados.<br>
+A api é multidevices e aceita vários números conectados<br>
 O consumo médio de memória varia de quantidade de instâncias.<br>
+
+
+
+
 <br><br>
 Contribua com o projeto e receba atualizaçoes:<br>
 Contato:<br>
