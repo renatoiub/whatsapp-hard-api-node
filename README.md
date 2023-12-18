@@ -11,15 +11,15 @@ O unico comando que precisa de reinicializar o servidor é a função de ignorar
 
 Mapa de eventos para receber no webhook:
 
-connection.update 
-qrCode.update
-presence.update
-contacts.upsert
-chats.upsert
-chats.delete
-messages.update
-messages.upsert
-call.events
-groups.upsert
-groups.update
-group-participants.update
+connection.update <br>
+qrCode.update<br>
+presence.update<br>
+contacts.upsert<br>
+chats.upsert<br>
+chats.delete<br>
+messages.update<br>
+messages.upsert<br>
+call.events<br>
+groups.upsert<br>
+groups.update<br>
+group-participants.update<br>
