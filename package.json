@@ -1,7 +1,7 @@
 {
     "name": "whatsapp-hard-api-nodejs",
     "version": "1.0",
-    "description": "Whatsapp api baseado em baileys",
+    "description": "Whatsapp api rest multidevices baseada em baileys",
     "main": "server.js",
     "scripts": {
         "start": "node src/server.js",
