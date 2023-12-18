@@ -76,6 +76,10 @@ Documentação via postman:<br>
 <td>Resposta de mensagem</td>
 <td>✔</td>
 </tr>
+	<tr>
+<td>Envia presença: Digitando.. Gravando audio..</td>
+<td>✔</td>
+</tr>
 <tr>
 <td>Send Location</td>
 <td>✔</td>
