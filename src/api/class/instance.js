@@ -1134,7 +1134,30 @@ else if(origem==='base64')
 	
 		if(data.type==='audio')
 			{
-				//console.log('aqui')
+				if(mimetype==='audio/ogg')
+					{
+						
+						if(data.options && data.options.delay)
+		{	
+			if(data.options.delay>0)
+				{
+				await this.instance.sock?.sendPresenceUpdate('recording',to)
+				await delay(data.options.delay*1000)
+				}
+		}
+				
+			type = {
+                    url: data.url,
+			
+               }
+				mimetype = 'audio/mp4'
+				filename = await this.getFileNameFromUrl(data.url)	
+						
+					}
+				else
+					{
+						
+					
 		audio = await this.convertToMP4(origem);
 		mimetype ='audio/mp4'
 				type = await fs.readFile(audio);
@@ -1146,15 +1169,28 @@ else if(origem==='base64')
 				await delay(data.options.delay*1000)
 				}
 		}
-				
+				}
 			}
 		
 		else if (data.type==='video')
 			{
 				
+				if(mimetype==='video/mp4')
+				{
+				type = {
+                    url: data.url,
+			
+               }
+				
+				filename = await this.getFileNameFromUrl(data.url)
+				
+				}
+				else
+				{
 				video = await this.convertTovideoMP4(origem);
 		mimetype ='video/mp4'
 				type = await fs.readFile(video);
+				}
 							
 				
 			}
@@ -1288,7 +1324,19 @@ if(type==='audio')
 		await delay(d*1000)
 		}
 				
-			
+		if(mime==='audio/ogg')
+		{
+		
+		const filePath = file.originalname;
+const extension = path.extname(filePath);
+
+ mimetype = 'audio/mp4';
+	filename = file.originalname
+		buferFile = file.buffer
+		
+		}
+		else
+		{
 	
 		filename = uuidv4()+'.mp4'
 		
@@ -1305,7 +1353,7 @@ if(type==='audio')
 		 buferFile = await fs.readFile(audio);
 		
 		
-
+		}
 	//mimetype ='audio/mp4'
 		
 		
@@ -1313,6 +1361,21 @@ if(type==='audio')
 	
 	}
 		else if (type==='video')
+		{
+		
+		if(mime==='video/mp4')
+		{
+		
+		const filePath = file.originalname;
+const extension = path.extname(filePath);
+
+ mimetype = 'video/mp4';
+	filename = file.originalname
+		buferFile = file.buffer
+		
+		}
+		
+		else
 		{
 		
 		filename = uuidv4()+'.mp4'
@@ -1328,6 +1391,8 @@ if(type==='audio')
 
 			//await delay(1*1000)
 		 buferFile = await fs.readFile(video);
+		
+		}
 		
 		
 		}
