@@ -17,7 +17,8 @@ const {
 	proto,
 	delay,
 	useMultiFileAuthState,
-	fetchLatestBaileysVersion	
+	fetchLatestBaileysVersion,
+	makeCacheableSignalKeyStore
 	
 	
 	
@@ -387,7 +388,7 @@ async instanceFind(key) {
 
           
                 const  { state, saveCreds, keys} = await this.dataBase()
-                this.authState = { state: state, saveCreds: saveCreds, keys: keys }
+                this.authState = { state: state, saveCreds: saveCreds, keys: makeCacheableSignalKeyStore(keys,this.logger) }
 		
 		
                 //sessions.push({ key: this.key, webhook:this.allowWebhook, webhookUrl:this.instance.customWebhook});
