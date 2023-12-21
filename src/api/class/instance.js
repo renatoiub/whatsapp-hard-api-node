@@ -670,7 +670,7 @@ try{
                     }
                 }
                 
-                await this.SendWebhook('message','message.upsert', webhookData, this.key)
+                await this.SendWebhook('message','messages.upsert', webhookData, this.key)
             })
         })
 
