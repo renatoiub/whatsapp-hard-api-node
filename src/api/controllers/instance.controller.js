@@ -233,7 +233,7 @@ exports.getcode = async (req, res) =>
 	try{
 		if(!req.body.number)
 			{
-				
+			
 				return res.json({
         error: true,
         message: 'Numero de telefone inválido'
@@ -242,6 +242,7 @@ exports.getcode = async (req, res) =>
 			}
 		else
 			{
+				
 		const instance = WhatsAppInstances[req.query.key]
 	data = await instance.getInstanceDetail(req.body.key)
     
@@ -254,7 +255,7 @@ exports.getcode = async (req, res) =>
 			}
 		else
 			{
-const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.query.number)
+const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.body.number)
 return res.json({
         error: false,
         code: code
