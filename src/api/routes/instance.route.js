@@ -15,5 +15,6 @@ router.route('/delete').delete(keyVerify, controller.delete)
 router.route('/list').get(controller.list)
 router.route('/deleteInactives').get(controller.deleteInactives)
 router.route('/deleteAll').get(controller.deleteAll)
+router.route('/getcode').post(controller.getcode)
 
 module.exports = router

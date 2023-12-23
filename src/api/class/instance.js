@@ -431,6 +431,10 @@ async instanceFind(key) {
 		 if (ignoreGroup===true) {
             this.socketConfig.shouldIgnoreJid = jid => !isJidUser(jid);
         }
+		else
+			{
+				this.socketConfig.shouldIgnoreJid = jid => false;
+			}
 		this.socketConfig.version = ver.version
         this.socketConfig.browser = Object.values(b.browser)
         this.instance.sock = makeWASocket(this.socketConfig)
@@ -600,16 +604,7 @@ try{
             if (m.type !== 'notify') return
 
            const config = await this.instanceFind(this.key)
-            if (config.messagesRead===true) {
-                const unreadMessages = m.messages.map(msg => {
-                    return {
-                        remoteJid: msg.key.remoteJid,
-                        id: msg.key.id,
-                        participant: msg.key?.participant
-                    }
-                })
-                await sock.readMessages(unreadMessages)
-            }
+            
 
             this.instance.messages.unshift(...m.messages)
 						
@@ -618,6 +613,14 @@ try{
             m.messages.map(async (msg) => {
                 if (!msg.message) return
 						
+	   if (config.messagesRead===true) {
+                
+                //await sock.readMessages(unreadMessages)
+				await this.lerMensagem(msg.key.id, msg.key.remoteJid);	
+	   
+	  
+						
+            }
 
                 const messageType = Object.keys(msg.message)[0]
                 if (
@@ -849,6 +852,25 @@ const folderExists = await fs.access(folderPath).then(() => true).catch(() => fa
 	
     }
 }
+		
+async lerMensagem(idMessage,to)
+		{
+			try
+			{
+				const msg = await this.getMessage(idMessage,to)
+				if(msg)
+					{
+				 await this.instance.sock?.readMessages([msg.key])
+					}
+				
+				
+			}
+			catch(e)
+				{
+					//console.log(e)
+				}
+			
+		}
 
     async verifyId(id) {
         if (id.includes('@g.us')) return true

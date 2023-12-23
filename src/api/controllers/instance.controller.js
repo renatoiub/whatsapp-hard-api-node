@@ -188,6 +188,11 @@ if (req.body.base64 === null || req.body.base64 === undefined) {
 			
 
 if (index !== -1) {
+	
+	 const instance = new WhatsAppInstance(key, webhook, webhookUrl)
+	 WhatsAppInstances[key] = instance;
+    const data = await instance.init()
+	
 
   sessions[index] = { key, ignoreGroups, webhook, base64, webhookUrl, browser, webhookEvents, messagesRead,ignoreGroups};
 	
@@ -208,6 +213,8 @@ if (index !== -1) {
 		
     })
 	
+	   
+	
     
 }
    else{
@@ -219,6 +226,57 @@ if (index !== -1) {
     
    
    }
+}
+
+exports.getcode = async (req, res) => 
+{
+	try{
+		if(!req.body.number)
+			{
+				
+				return res.json({
+        error: true,
+        message: 'Numero de telefone inválido'
+    		})
+				
+			}
+		else
+			{
+		const instance = WhatsAppInstances[req.query.key]
+	data = await instance.getInstanceDetail(req.body.key)
+    
+		if(data.phone_connected===true)
+			{
+		return res.json({
+        error: true,
+        message: 'Telefone já conectado'
+    		})
+			}
+		else
+			{
+const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.query.number)
+return res.json({
+        error: false,
+        code: code
+    		})
+			}
+	}
+
+
+}
+catch(e)
+{
+	//console.log(e)
+return res.json({
+        error: true,
+        message: 'instância não localizada'
+    		})
+
+
+}
+		 
+	
+	
 }
 
 exports.ativas = async (req, res) => {
