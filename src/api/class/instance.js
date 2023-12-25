@@ -18,7 +18,11 @@ const {
 	delay,
 	useMultiFileAuthState,
 	fetchLatestBaileysVersion,
-	makeCacheableSignalKeyStore
+	makeCacheableSignalKeyStore,
+	getDevice,
+  GroupMetadata,
+  MessageUpsertType,
+  ParticipantAction
 	
 	
 	
@@ -287,21 +291,26 @@ async dataBase()
 
 
     async SendWebhook(type, hook, body, key) {
-		const data = await this.instanceFind(key)
+		
 	
-		if (data.webhook===false)
+		if (this.instance.webhok===false)
 				{ 
 					return
 				}
+		else
+			{
+		const webhook_url = this.instance.webhook_url;
+		const events = this.instance.webhook_events		
 		        
-		const hasMessagesSet = data.webhookEvents.includes(hook)
+		const hasMessagesSet = events.includes(hook)
+		
 	
 		if(hasMessagesSet ===true)
 			
 			{
-				
+			
 		this.web = axios.create({
-                baseURL: data.webhookUrl,
+                baseURL: this.instance.webhook_url,
             })
         this.web
             .post('', {
@@ -311,6 +320,7 @@ async dataBase()
             })
             .catch(() => { })
 				
+			}
 			}
     }
 
@@ -396,6 +406,7 @@ async instanceFind(key) {
 		
 		let b;
 		let ignoreGroup;
+		
 		if(existingSession)
 			{
            b = {
@@ -405,7 +416,12 @@ async instanceFind(key) {
     version: '22.5.0',
   }
 }; 
-	ignoreGroup = existingSession.ignoreGroups			
+	ignoreGroup = existingSession.ignoreGroups	
+	
+	this.instance.mark = existingSession.messagesRead
+	this.instance.webhok = existingSession.webhook;
+	this.instance.webhook_url = existingSession.webhookUrl
+	this.instance.webhook_events = existingSession.webhookEvents			
 			}
 		else
 			{
@@ -417,7 +433,12 @@ async instanceFind(key) {
     version: '22.5.0',
   }
 }; 
-	ignoreGroup = false	
+	ignoreGroup = false
+	
+	this.instance.mark = false
+	this.instance.webhok= false
+	this.instance.webhook_url = false
+	this.instance.webhook_events = false			
 				
 			}
 
@@ -449,6 +470,7 @@ async instanceFind(key) {
 
 
     setHandler() {
+		
 
 
         const sock = this.instance.sock
@@ -479,6 +501,10 @@ async instanceFind(key) {
 		//await this.deleteFolder('db/'+this.key)
 		
                     await this.init()
+		
+		await this.SendWebhook('connection','connection.update', {
+                    connection: connection,
+                }, this.key)
                 } else {
 		await this.deleteFolder('db/'+this.key)
 		if(!this.instance.deleted==true)
@@ -490,9 +516,7 @@ async instanceFind(key) {
                 }
 
                
-                await this.SendWebhook('connection','connection.update', {
-                    connection: connection,
-                }, this.key)
+                
             } else if (connection === 'open') {
                
 				
@@ -571,7 +595,7 @@ try{
 	
       
        sock?.ev.on('chats.upsert', async(newChat) => {
-            
+          
           await this.SendWebhook('chats','chats.upsert', newChat, this.key)   
        })
 		
@@ -603,7 +627,7 @@ try{
                 this.instance.messages.unshift(...m.messages)
             if (m.type !== 'notify') return
 
-           const config = await this.instanceFind(this.key)
+          
             
 
             this.instance.messages.unshift(...m.messages)
@@ -613,7 +637,7 @@ try{
             m.messages.map(async (msg) => {
                 if (!msg.message) return
 						
-	   if (config.messagesRead===true) {
+	   if (this.instance.mark===true) {
                 
                 //await sock.readMessages(unreadMessages)
 				await this.lerMensagem(msg.key.id, msg.key.remoteJid);	
@@ -716,32 +740,35 @@ try{
             }
         })
 
-        sock?.ev.on('groups.upsert', async (newChat) => {
-            //console.log('groups.upsert')
+        sock?.ev.on('groups.upsert', async (groupUpsert) => {
+            //console.log('usert grupos')
             //console.log(newChat)
+		//console.log(newChat)
             
             await this.SendWebhook('updateGroups','groups.upsert', {
-                data: newChat,
+                data: groupUpsert,
             }, this.key)
         })
+		
+		
 
-        sock?.ev.on('groups.update', async (newChat) => {
+        sock?.ev.on('groups.update',  async (groupUpdate) => {
             //console.log('groups.update')
-            //console.log(newChat)
+           //console.log(groupUpdate)
             //this.updateGroupSubjectByApp(newChat)
-          
+          //console.log(newChat)
             await this.SendWebhook('updateGroups','groups.update', {
-                data: newChat,
+                data: groupUpdate,
             }, this.key)
-        })
+        }) 
 
-        sock?.ev.on('group-participants.update', async (newChat) => {
-            //console.log('group-participants.update')
-            //console.log(newChat)
+        sock?.ev.on('group-participants.update', async (groupParticipants) => {
+           //console.log('group-participants.update')
+            //console.log(groupParticipants)
             //this.updateGroupParticipantsByApp(newChat)
             
             await this.SendWebhook('group-participants','group-participants.update', {
-                data: newChat,
+                data: groupParticipants,
             }, this.key)
         })
     }
