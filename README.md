@@ -61,15 +61,7 @@ Colocar no env a porta da aplicação, e os mimetypes que você deseja enviar vi
     </clipboard-copy>
   </div></div>
 
-  
 
-
-
-  
-  
-Arquivo ENV:<br> 
-
-Colocar no env a porta da aplicação, e os mimetypes que você deseja enviar via API. Caso opite por proteger as rotas, terá que enviar o token Bearer token (Authorization: Bearer RANDOM_STRING_HERE)<br>
 
 Mapa de eventos para receber no webhook:<br>
 
