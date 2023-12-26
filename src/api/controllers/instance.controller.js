@@ -233,7 +233,6 @@ exports.getcode = async (req, res) =>
 	try{
 		if(!req.body.number)
 			{
-				//testing
 			
 				return res.json({
         error: true,

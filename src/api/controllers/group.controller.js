@@ -46,13 +46,18 @@ exports.listAll = async (req, res) => {
 }
 
 exports.leaveGroup = async (req, res) => {
-    const data = await WhatsAppInstances[req.query.key].leaveGroup(req.query.id)
+    const data = await WhatsAppInstances[req.query.key].leaveGroup(req.body.id)
+    return res.status(201).json({ error: false, data: data })
+}
+
+exports.join = async (req, res) => {
+    const data = await WhatsAppInstances[req.query.key].joinURL(req.body.url)
     return res.status(201).json({ error: false, data: data })
 }
 
 exports.getInviteCodeGroup = async (req, res) => {
     const data = await WhatsAppInstances[req.query.key].getInviteCodeGroup(
-        req.query.id
+        req.body.id
     )
     return res
         .status(201)
@@ -62,7 +67,7 @@ exports.getInviteCodeGroup = async (req, res) => {
 exports.getInstanceInviteCodeGroup = async (req, res) => {
     const data = await WhatsAppInstances[
         req.query.key
-    ].getInstanceInviteCodeGroup(req.query.id)
+    ].getInstanceInviteCodeGroup(req.body.id)
     return res
         .status(201)
         .json({ error: false, link: 'https://chat.whatsapp.com/' + data })

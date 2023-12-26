@@ -7,6 +7,10 @@ const pino = require('pino')
 const { promisify } = require('util');
 
 
+const cach =  require('node-cache');
+const msgRetryCounterCache =   new cach()
+
+
 let intervalStore = []
 const {
   	makeWASocket,
@@ -70,10 +74,13 @@ class WhatsAppInstance {
         defaultQueryTimeoutMs: undefined,
         printQRInTerminal: false,
 		logger: pino({
-            level: config.log.level,
-        			})
+         level: config.log.level,
+        			}),
 			
 		 //markOnlineOnConnect:false
+			msgRetryCounterCache,
+			//getMessage
+			
     				}
 
 
@@ -458,7 +465,8 @@ async instanceFind(key) {
 			}
 		this.socketConfig.version = ver.version
         this.socketConfig.browser = Object.values(b.browser)
-        this.instance.sock = makeWASocket(this.socketConfig)
+        this.instance.sock = makeWASocket(this.socketConfig,this.getMessage)
+		
 		
 		dados?.bind(this.instance.sock?.ev)
 		
@@ -2059,6 +2067,28 @@ idLogado()
 		const user = this.getWhatsAppId(user_instance.split(':')[0]);
 		return user;
 }
+ async joinURL(url)
+		{
+		try
+		{
+			const partesDaURL = url.split('/');
+			const codigoDoGrupo = partesDaURL[partesDaURL.length - 1];
+		
+		const entrar = await this.instance.sock?.groupAcceptInvite(codigoDoGrupo);
+		return entrar
+		
+		
+		}
+		catch(e)
+		{
+		return {
+                error: true,
+                message:'Erro ao entrar via URL, verifique se a url ainda é valida ou se o grupo é um grupo aberto.',
+            }
+		
+		}
+		
+		}
 
     async leaveGroup(id) {
 
