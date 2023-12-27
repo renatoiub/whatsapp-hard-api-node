@@ -557,12 +557,11 @@ async instanceFind(key) {
 		
 	sock?.ev.on('contacts.upsert', async (contacts) => {
 		
-	
- const folderPath = 'db/'+this.key; 
+
+try{
+		const folderPath = 'db/'+this.key; 
 
 const filePath = path.join(folderPath, 'contacts.json');
-	
-try{
       await fs.access(folderPath);
 
   
@@ -586,6 +585,8 @@ try{
 
    
     await fs.writeFile(filePath, JSON.stringify(existingContacts, null, 2), 'utf-8');
+		
+		 await this.SendWebhook('contacts','contacts.upsert', contacts, this.key)
     
 } catch (error) {
     
@@ -595,7 +596,9 @@ try{
 }
 
 
-                await this.SendWebhook('contacts','contacts.upsert', contacts, this.key)
+               
+
+
            
 });
 		
@@ -603,8 +606,14 @@ try{
 	
       
        sock?.ev.on('chats.upsert', async(newChat) => {
+	   try{
           
-          await this.SendWebhook('chats','chats.upsert', newChat, this.key)   
+          await this.SendWebhook('chats','chats.upsert', newChat, this.key)  
+			}	
+	   catch(e)
+	   			{
+	   return
+				}
        })
 		
 		
@@ -614,14 +623,24 @@ try{
 
        
         sock?.ev.on('chats.delete',  async(deletedChats) => {
-        
+        try{
              await this.SendWebhook('chats','chats.delete', deletedChats, this.key)
+			}
+	   catch(e)
+	   			{
+	   return
+				}
         })
 		
 		 sock?.ev.on('messages.update', async (m) => {
-		
+		try{
 	
                 await this.SendWebhook('updateMessage','messages.update', m, this.key)
+	   	}
+	   catch(e)
+	   			{
+	   return
+				}
 		
 })
 
@@ -630,6 +649,7 @@ try{
         // on new mssage
         sock?.ev.on('messages.upsert', async (m) => {
         
+	  try{
 		
             if (m.type === 'prepend')
                 this.instance.messages.unshift(...m.messages)
@@ -707,6 +727,13 @@ try{
                 
                 await this.SendWebhook('message','messages.upsert', webhookData, this.key)
             })
+			
+		}
+		catch(e)
+			{
+				return;
+			}
+
         })
 
         
@@ -717,6 +744,8 @@ try{
 		
 		
         sock?.ws.on('CB:call', async (data) => {
+		try
+		{
             if (data.content) {
                 if (data.content.find((e) => e.tag === 'offer')) {
                     const content = data.content.find((e) => e.tag === 'offer')
@@ -746,16 +775,28 @@ try{
                     }, this.key)
                 }
             }
+			
+			}
+			catch(e)
+				{
+					return;
+				}
         })
 
         sock?.ev.on('groups.upsert', async (groupUpsert) => {
             //console.log('usert grupos')
             //console.log(newChat)
-		//console.log(newChat)
-            
+		
+		try
+		{
             await this.SendWebhook('updateGroups','groups.upsert', {
                 data: groupUpsert,
             }, this.key)
+			
+		} catch(e)
+	{
+		return
+	}
         })
 		
 		
@@ -765,19 +806,33 @@ try{
            //console.log(groupUpdate)
             //this.updateGroupSubjectByApp(newChat)
           //console.log(newChat)
+		try{
             await this.SendWebhook('updateGroups','groups.update', {
                 data: groupUpdate,
             }, this.key)
+			
+		}
+		catch(e)
+			{
+				return
+			}
         }) 
 
         sock?.ev.on('group-participants.update', async (groupParticipants) => {
            //console.log('group-participants.update')
             //console.log(groupParticipants)
             //this.updateGroupParticipantsByApp(newChat)
-            
+           try
+		{
+		
             await this.SendWebhook('group-participants','group-participants.update', {
                 data: groupParticipants,
             }, this.key)
+			
+		} catch(e)
+	{
+		return;
+	}
         })
     }
 
