@@ -24,9 +24,11 @@ const {
 	fetchLatestBaileysVersion,
 	makeCacheableSignalKeyStore,
 	getDevice,
-  GroupMetadata,
-  MessageUpsertType,
-  ParticipantAction
+  	GroupMetadata,
+ 	MessageUpsertType,
+  	ParticipantAction,
+	generateWAMessageFromContent,
+	WASocket
 	
 	
 	
@@ -78,8 +80,56 @@ class WhatsAppInstance {
         			}),
 			
 		 //markOnlineOnConnect:false
-			msgRetryCounterCache,
-			//getMessage
+		msgRetryCounterCache:msgRetryCounterCache,
+		getMessage:	(key) => 
+			  
+			  {
+				 
+				   return ( dados.loadMessage(key.remoteJid, key.id))?.message || undefined;
+			  },
+		patchMessageBeforeSending: (msg) => {
+			
+			
+          if (msg.deviceSentMessage?.message?.listMessage?.listType == proto.Message.ListMessage.ListType.PRODUCT_LIST) {
+          msg = JSON.parse(JSON.stringify(msg));
+          msg.deviceSentMessage.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT;
+        }
+
+        if (msg.listMessage?.listType == proto.Message.ListMessage.ListType.PRODUCT_LIST) {
+          msg = JSON.parse(JSON.stringify(msg));
+			  
+			 
+
+          msg.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT;
+						
+        }
+						
+	 const requiresPatch = !!(msg.buttonsMessage || msg.listMessage || msg.templateMessage);
+          if (requiresPatch) {
+            msg = {
+              viewOnceMessageV2: {
+                message: {
+                  messageContextInfo: {
+                    deviceListMetadataVersion: 2,
+                    deviceListMetadata: {},
+                  },
+                  ...msg,
+                },
+              },
+            };
+          }
+
+          return msg					
+						
+						
+						
+						
+						
+
+        
+      },
+		
+		
 			
     				}
 
@@ -88,6 +138,7 @@ class WhatsAppInstance {
     authState
     allowWebhook = undefined
     webhook = undefined
+	
 
     instance = {
         key: this.key,
@@ -465,7 +516,8 @@ async instanceFind(key) {
 			}
 		this.socketConfig.version = ver.version
         this.socketConfig.browser = Object.values(b.browser)
-        this.instance.sock = makeWASocket(this.socketConfig,this.getMessage)
+		
+        this.instance.sock = makeWASocket(this.socketConfig)
 		
 		
 		dados?.bind(this.instance.sock?.ev)
@@ -1768,12 +1820,13 @@ catch (error)
         const result = await this.instance.sock?.sendMessage(
             this.getWhatsAppId(to),
             {
-                text: data.text,
-                sections: data.sections,
-                buttonText: data.buttonText,
-                footer: data.description,
-                title: data.title,
-                viewOnce: true
+			text:data.title,
+            title: data.title,
+          description: data.description,
+          buttonText: data.buttonText,
+          footerText: data.footerText,
+          sections: data.sections,
+          listType: 2,
             }
         )
         return result
