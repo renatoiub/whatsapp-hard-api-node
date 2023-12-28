@@ -97,7 +97,7 @@ Documentação via postman:<br>
 </thead>
 <tbody>
 	<tr>
-<td>Conexção via qr_code</td>
+<td>Conexão via qr_code</td>
 <td>✔</td>
 </tr>
 <tr>
