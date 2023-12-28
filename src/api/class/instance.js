@@ -1,4 +1,5 @@
 /* eslint-disable no-unsafe-optional-chaining */
+//update for list
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg')
 const { exec } = require('child_process')
 const fetch = require('node-fetch');
