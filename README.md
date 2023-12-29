@@ -147,8 +147,8 @@ Documentação via postman:<br>
 <td>✔</td>
 </tr>
 <tr>
-<td>Send List</td>
-<td>❌</td>
+<td>Send List (beta)</td>
+<td>✔</td>
 </tr>
 <tr>
 <td>Send Link Preview</td>
