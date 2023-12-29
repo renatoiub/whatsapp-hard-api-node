@@ -1815,22 +1815,105 @@ catch (error)
         )
         return result
     }
+		
+			
 
-    async sendListMessage(to, data) {
+    async sendListMessage(to, type, options, groupOptions, data) {
+   		
+			
+	
+		
+		if(type==='user')
+		{
+		
         await this.verifyId(this.getWhatsAppId(to))
-        const result = await this.instance.sock?.sendMessage(
-            this.getWhatsAppId(to),
-            {
-			text:data.title,
-            title: data.title,
+		to = this.getWhatsAppId(to)
+		}
+		else
+		{
+		to = this.getGroupId(to)
+	
+		await this.verifyGroup(this.getGroupId(to))
+		
+		}
+		if(options && options.delay && options.delay>0)
+		{
+		
+		await this.setStatus('composing', to, options.delay)
+		
+		}
+
+
+		
+let mentions = false
+		
+	if (type === 'group' && groupOptions && groupOptions.markUser) {
+    if (groupOptions.markUser === 'ghostMention') {
+	
+				
+				
+				const metadata = await this.instance.sock?.groupMetadata(this.getGroupId(to))
+				
+				 mentions = metadata.participants.map((participant) => participant.id)
+				
+				
+				
+			}
+		else
+			{
+				
+				mentions = this.parseParticipants(groupOptions.markUser)
+				
+			}
+    
+	}
+
+			let quoted = {quoted:null}	
+				
+				if(options && options.replyFrom)
+		{
+			
+			
+			 			
+		const msg =  await this.getMessage(options.replyFrom,to)
+		
+		
+		if(msg)
+		{
+		
+		quoted = {quoted:msg}
+		}
+		
+	       
+		}
+		
+		
+		
+		
+   
+   const msgList = 
+	   	{
+   		//type: 'ListMessage',	
+   			text:data.title,
+          title: data.title,
           description: data.description,
           buttonText: data.buttonText,
           footerText: data.footerText,
           sections: data.sections,
           listType: 2,
-            }
-        )
-        return result
+   			
+   
+		}
+		let idlogado = await this.idLogado()
+		const msgRes = generateWAMessageFromContent(to,{listMessage:msgList,mentions }, quoted,{idlogado});
+			
+			
+			
+		
+		//console.log(msgRes.key.id)
+        const result = await this.instance.sock?.relayMessage(to,msgRes.message,msgRes.key.id)
+		
+        return msgRes
     }
 
     async sendMediaButtonMessage(to, data) {
@@ -2170,7 +2253,7 @@ async groupFetchAllParticipating()
 
     
 
-idLogado()
+async idLogado()
 {
 		const user_instance = this.instance.sock?.user.id;
 		const user = this.getWhatsAppId(user_instance.split(':')[0]);
