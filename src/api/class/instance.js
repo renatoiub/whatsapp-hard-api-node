@@ -6,10 +6,9 @@ const fetch = require('node-fetch');
 const QRCode = require('qrcode')
 const pino = require('pino')
 const { promisify } = require('util');
-
-
 const cach =  require('node-cache');
 const msgRetryCounterCache =   new cach()
+
 
 
 let intervalStore = []
@@ -51,9 +50,10 @@ const dados = makeInMemoryStore({pino})
 const fs = require('fs').promises;
 const getMIMEType  = require('mime-types')
 const readFileAsync = promisify(fs.readFile);
-
+const util = require('util');
 const url = require('url');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
 
 
 	dados.readFromFile('db/mensagens.json')
@@ -177,7 +177,78 @@ class WhatsAppInstance {
 		
 
     }
+					   
+					   
+					   
+async geraThumb(videoPath) {
 
+  const tempDir = 'temp';  // Substitua pelo caminho desejado para armazenar temporariamente os thumbs
+  const thumbPath = 'temp/thumb.png';  // Use path.join para construir o caminho do arquivo de thumb em JPG
+
+  try {
+    let videoBuffer;
+	let videoTempPath
+
+    
+      if (videoPath.startsWith('http')) {
+        // Se a origem for uma URL, baixe o vídeo usando axios
+	
+        const response = await axios.get(videoPath, { responseType: 'arraybuffer' });
+	
+		  
+		videoTempPath = path.join(tempDir, 'tempVideo.mp4');
+		 videoBuffer = Buffer.from(response.data);
+		  
+    	await fs.writeFile(videoTempPath, videoBuffer);
+        
+      } else {
+        
+		videoTempPath = videoPath;  
+		  
+      }
+     
+
+  
+    const command = `${ffmpegPath.path}  -i ${videoTempPath} -ss 00:00:01 -vframes 1 ${thumbPath}`;
+    exec(command)
+
+    
+
+  	await delay(600)
+    const thumbContent = await fs.readFile(thumbPath, { encoding: 'base64' });
+
+   
+    //await Promise.all([fs.unlink(videoTempPath), fs.unlink(thumbPath)]);
+    
+   
+    return thumbContent;
+  } catch (error) {
+    throw error;
+  }
+}				   
+
+async thumbURL(url)
+{
+const videoUrl = url;
+try {
+  const thumbContentFromUrl = await this.geraThumb(videoUrl);
+  return thumbContentFromUrl
+} catch (error) {
+  throw new Error('Erro ao gerar thumb da url: '+error);
+}
+}
+
+					   
+async thumbBUFFER(buffer)
+{
+const videoBuffer = fs.readFile(buffer);
+try {
+  const thumbContentFromBuffer = await this.geraThumb(videoBuffer);
+  return thumbContentFromBuffer;
+} catch (error) {
+  throw new Error('Erro ao gerar thumb do arquivo local: '+error);
+}				   
+					   }
 
 
 async convertToMP4(audioSource) {
@@ -1237,7 +1308,8 @@ let audio =false;
 let document = false;
 let video = false;
 let image = false;
-
+let thumb = false;
+let send;	
 
 let myArray;
 	if(data.type==='image')
@@ -1347,7 +1419,7 @@ else if(origem==='base64')
                     url: data.url,
 			
                }
-				
+				thumb = await this.thumbURL(data.url);
 				filename = await this.getFileNameFromUrl(data.url)
 				
 				}
@@ -1356,6 +1428,7 @@ else if(origem==='base64')
 				video = await this.convertTovideoMP4(origem);
 		mimetype ='video/mp4'
 				type = await fs.readFile(video);
+					 thumb = await this.thumbBUFFER(video)
 				}
 							
 				
@@ -1374,7 +1447,7 @@ else if(origem==='base64')
 	
 
     
-        const send = await this.instance.sock?.sendMessage(
+        send = await this.instance.sock?.sendMessage(
             to,
             {
                 mimetype: mimetype,
@@ -1388,7 +1461,17 @@ else if(origem==='base64')
 		
 		if(data.type === 'audio' || data.type === 'video')
 			{
-		
+		if(data.type === 'video')
+			
+			{
+				//console.log(thumb)
+				const ms = JSON.parse(JSON.stringify(send));
+				ms.message.videoMessage.thumb = thumb;
+				send = ms;
+				
+				
+				
+			}
 				
 				const tempDirectory = 'temp/';
 		const files = await fs.readdir(tempDirectory);
@@ -1401,7 +1484,7 @@ else if(origem==='base64')
     }));
 	}
 				
-			
+		
         return send
     }
 	
