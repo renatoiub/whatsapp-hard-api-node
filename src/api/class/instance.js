@@ -182,16 +182,16 @@ class WhatsAppInstance {
 					   
 async geraThumb(videoPath) {
 
-  const tempDir = 'temp';  // Substitua pelo caminho desejado para armazenar temporariamente os thumbs
-  const thumbPath = 'temp/thumb.png';  // Use path.join para construir o caminho do arquivo de thumb em JPG
+  const tempDir = 'temp'; 
+  const thumbPath = 'temp/thumb.png';  
 
   try {
     let videoBuffer;
 	let videoTempPath
 
-    
+      if (typeof videoPath === 'string') {
       if (videoPath.startsWith('http')) {
-        // Se a origem for uma URL, baixe o vídeo usando axios
+   
 	
         const response = await axios.get(videoPath, { responseType: 'arraybuffer' });
 	
@@ -201,9 +201,17 @@ async geraThumb(videoPath) {
 		  
     	await fs.writeFile(videoTempPath, videoBuffer);
         
-      } else {
-        
-		videoTempPath = videoPath;  
+      } 
+		  else
+			  {
+				 videoTempPath = videoPath
+			  }
+	  }else {
+       
+		videoTempPath = path.join(tempDir, 'tempVideo.mp4');
+		  videoBuffer = Buffer.from(videoPath);
+		  
+    	await fs.writeFile(videoTempPath,videoBuffer);
 		  
       }
      
@@ -214,7 +222,7 @@ async geraThumb(videoPath) {
 
     
 
-  	await delay(600)
+  	await delay(1200)
     const thumbContent = await fs.readFile(thumbPath, { encoding: 'base64' });
 
    
@@ -241,9 +249,9 @@ try {
 					   
 async thumbBUFFER(buffer)
 {
-const videoBuffer = fs.readFile(buffer);
+//const videoBuffer = fs.readFile(buffer);
 try {
-  const thumbContentFromBuffer = await this.geraThumb(videoBuffer);
+  const thumbContentFromBuffer = await this.geraThumb(buffer);
   return thumbContentFromBuffer;
 } catch (error) {
   throw new Error('Erro ao gerar thumb do arquivo local: '+error);
@@ -1562,6 +1570,8 @@ let myArray;
 		let mimetype = false
 		let filename = false
 		let buferFile = false
+		let thumb;
+		let data;
 if(type==='audio')
 	{
 		
@@ -1619,8 +1629,9 @@ const extension = path.extname(filePath);
 const extension = path.extname(filePath);
 
  mimetype = 'video/mp4';
-	filename = file.originalname
-		buferFile = file.buffer
+filename = file.originalname
+buferFile = file.buffer
+thumb = await this.thumbBUFFER(buferFile)		
 		
 		}
 		
@@ -1640,6 +1651,7 @@ const extension = path.extname(filePath);
 
 			//await delay(1*1000)
 		 buferFile = await fs.readFile(video);
+		thumb = await this.thumbBUFFER(buferFile)	
 		
 		}
 		
@@ -1676,7 +1688,7 @@ const mimetype = getMIMEType.lookup(extension);
 		
 
 
-        const data = await this.instance.sock?.sendMessage(
+        data = await this.instance.sock?.sendMessage(
             to,
             {
                 [type]: buferFile,
@@ -1690,6 +1702,21 @@ const mimetype = getMIMEType.lookup(extension);
 
 if(type==='audio' || type==='video')
 	{
+		
+		
+		if(type === 'video')
+			
+			{
+				//console.log(thumb)
+				const ms = JSON.parse(JSON.stringify(data));
+				ms.message.videoMessage.thumb = thumb;
+				data = ms;
+				
+				
+				
+			}
+		
+		
 		
 	
 		const tempDirectory = 'temp/';
