@@ -182,16 +182,16 @@ class WhatsAppInstance {
 					   
 async geraThumb(videoPath) {
 
-  const tempDir = 'temp'; 
-  const thumbPath = 'temp/thumb.png';  
+  const tempDir = 'temp';  // Substitua pelo caminho desejado para armazenar temporariamente os thumbs
+  const thumbPath = 'temp/thumb.png';  // Use path.join para construir o caminho do arquivo de thumb em JPG
 
   try {
     let videoBuffer;
 	let videoTempPath
 
-      if (typeof videoPath === 'string') {
+    
       if (videoPath.startsWith('http')) {
-   
+        // Se a origem for uma URL, baixe o vídeo usando axios
 	
         const response = await axios.get(videoPath, { responseType: 'arraybuffer' });
 	
@@ -201,28 +201,31 @@ async geraThumb(videoPath) {
 		  
     	await fs.writeFile(videoTempPath, videoBuffer);
         
-      } 
-		  else
-			  {
-				 videoTempPath = videoPath
-			  }
-	  }else {
-       
-		videoTempPath = path.join(tempDir, 'tempVideo.mp4');
-		  videoBuffer = Buffer.from(videoPath);
-		  
-    	await fs.writeFile(videoTempPath,videoBuffer);
+      } else {
+        
+		videoTempPath = videoPath;  
 		  
       }
      
 
   
     const command = `${ffmpegPath.path}  -i ${videoTempPath} -ss 00:00:01 -vframes 1 ${thumbPath}`;
-    exec(command)
+    await new Promise((resolve, reject) => {
+      exec(ffmpegCommand, (error, stdout, stderr) => {
+        if (error) {
+          
+          reject(error);
+        } else {
+        
+          resolve();
+        }
+      });
+    });
+
 
     
 
-  	await delay(1200)
+ 
     const thumbContent = await fs.readFile(thumbPath, { encoding: 'base64' });
 
    
@@ -249,9 +252,9 @@ try {
 					   
 async thumbBUFFER(buffer)
 {
-//const videoBuffer = fs.readFile(buffer);
+const videoBuffer = fs.readFile(buffer);
 try {
-  const thumbContentFromBuffer = await this.geraThumb(buffer);
+  const thumbContentFromBuffer = await this.geraThumb(videoBuffer);
   return thumbContentFromBuffer;
 } catch (error) {
   throw new Error('Erro ao gerar thumb do arquivo local: '+error);
@@ -688,13 +691,12 @@ async instanceFind(key) {
 		
 		
 	sock?.ev.on('contacts.upsert', async (contacts) => {
-		let folderPath
-		let filePath 
+		
 
 try{
-	folderPath = 'db/'+this.key;	 
+		const folderPath = 'db/'+this.key; 
 
- 	filePath = path.join(folderPath, 'contacts.json');
+const filePath = path.join(folderPath, 'contacts.json');
       await fs.access(folderPath);
 
   
@@ -722,8 +724,7 @@ try{
 		 await this.SendWebhook('contacts','contacts.upsert', contacts, this.key)
     
 } catch (error) {
-    folderPath = 'db/'+this.key;
-	filePath = path.join(folderPath, 'contacts.json');
+    
     await fs.mkdir(folderPath, { recursive: true }); 
     await fs.writeFile(filePath, JSON.stringify(contacts, null, 2), 'utf-8');
     
@@ -1572,8 +1573,6 @@ let myArray;
 		let mimetype = false
 		let filename = false
 		let buferFile = false
-		let thumb;
-		let data;
 if(type==='audio')
 	{
 		
@@ -1631,9 +1630,8 @@ const extension = path.extname(filePath);
 const extension = path.extname(filePath);
 
  mimetype = 'video/mp4';
-filename = file.originalname
-buferFile = file.buffer
-thumb = await this.thumbBUFFER(buferFile)		
+	filename = file.originalname
+		buferFile = file.buffer
 		
 		}
 		
@@ -1653,7 +1651,6 @@ thumb = await this.thumbBUFFER(buferFile)
 
 			//await delay(1*1000)
 		 buferFile = await fs.readFile(video);
-		thumb = await this.thumbBUFFER(buferFile)	
 		
 		}
 		
@@ -1690,7 +1687,7 @@ const mimetype = getMIMEType.lookup(extension);
 		
 
 
-        data = await this.instance.sock?.sendMessage(
+        const data = await this.instance.sock?.sendMessage(
             to,
             {
                 [type]: buferFile,
@@ -1704,21 +1701,6 @@ const mimetype = getMIMEType.lookup(extension);
 
 if(type==='audio' || type==='video')
 	{
-		
-		
-		if(type === 'video')
-			
-			{
-				//console.log(thumb)
-				const ms = JSON.parse(JSON.stringify(data));
-				ms.message.videoMessage.thumb = thumb;
-				data = ms;
-				
-				
-				
-			}
-		
-		
 		
 	
 		const tempDirectory = 'temp/';
@@ -2078,7 +2060,7 @@ let mentions = false
     }
 
     // change your display picture or a group's
-    async updateProfilePicture(id, url, type) {
+    async updateProfilePicture(to, url, type) {
 		//console.log(id)
 		 
         try {
@@ -2087,11 +2069,11 @@ let mentions = false
 		 {
 		 
 		 await this.verifyId(this.getWhatsAppId(to))
-			to = this.getWhatsAppId(id)
+			to = this.getWhatsAppId(to)
 		}
 		else
 		{
-		to = this.getGroupId(id)
+		to = this.getGroupId(to)
 	
 		await this.verifyGroup(to)
 		
