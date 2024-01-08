@@ -691,8 +691,8 @@ async instanceFind(key) {
 		
 		
 	sock?.ev.on('contacts.upsert', async (contacts) => {
-		
-
+	let  folderPath;
+	let filePath;
 try{
 		const folderPath = 'db/'+this.key; 
 
@@ -724,7 +724,9 @@ const filePath = path.join(folderPath, 'contacts.json');
 		 await this.SendWebhook('contacts','contacts.upsert', contacts, this.key)
     
 } catch (error) {
-    
+const folderPath = 'db/'+this.key; 
+
+const filePath = path.join(folderPath, 'contacts.json');
     await fs.mkdir(folderPath, { recursive: true }); 
     await fs.writeFile(filePath, JSON.stringify(contacts, null, 2), 'utf-8');
     
