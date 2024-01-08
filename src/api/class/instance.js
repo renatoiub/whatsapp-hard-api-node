@@ -211,7 +211,7 @@ async geraThumb(videoPath) {
   
     const command = `${ffmpegPath.path}  -i ${videoTempPath} -ss 00:00:01 -vframes 1 ${thumbPath}`;
     await new Promise((resolve, reject) => {
-      exec(ffmpegCommand, (error, stdout, stderr) => {
+      exec(command, (error, stdout, stderr) => {
         if (error) {
           
           reject(error);
@@ -2530,6 +2530,7 @@ else
                         for (const participant of newChat.participants) {
                             if (
                                 chat.participant.filter(
+
                                     (p) => p.id == participant
                                 )[0]
                             ) {
