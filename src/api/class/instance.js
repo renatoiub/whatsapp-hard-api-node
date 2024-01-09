@@ -182,8 +182,11 @@ class WhatsAppInstance {
 					   
 async geraThumb(videoPath) {
 
-  const tempDir = 'temp';  // Substitua pelo caminho desejado para armazenar temporariamente os thumbs
-  const thumbPath = 'temp/thumb.png';  // Use path.join para construir o caminho do arquivo de thumb em JPG
+  const tempDir = 'temp';  
+  const thumbPath = 'temp/thumb.png';  
+	
+const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+  const base64 =  base64Regex.test(videoPath);
 
   try {
     let videoBuffer;
@@ -191,7 +194,7 @@ async geraThumb(videoPath) {
 
     
       if (videoPath.startsWith('http')) {
-        // Se a origem for uma URL, baixe o vídeo usando axios
+        
 	
         const response = await axios.get(videoPath, { responseType: 'arraybuffer' });
 	
@@ -201,7 +204,15 @@ async geraThumb(videoPath) {
 		  
     	await fs.writeFile(videoTempPath, videoBuffer);
         
-      } else {
+      } 
+	  else if(base64===true)
+		  {
+	videoTempPath = path.join(tempDir, 'tempVideo.mp4');
+const buffer = Buffer.from(videoPath, 'base64');
+  await fs.writeFile(videoTempPath, buffer);
+		  }
+	  
+	  else {
         
 		videoTempPath = videoPath;  
 		  
@@ -227,9 +238,11 @@ async geraThumb(videoPath) {
 
  
     const thumbContent = await fs.readFile(thumbPath, { encoding: 'base64' });
+	  
+	  
 
    
-    //await Promise.all([fs.unlink(videoTempPath), fs.unlink(thumbPath)]);
+    await Promise.all([fs.unlink(videoTempPath), fs.unlink(thumbPath)]);
     
    
     return thumbContent;
@@ -259,7 +272,19 @@ try {
 } catch (error) {
   throw new Error('Erro ao gerar thumb do arquivo local: '+error);
 }				   
-					   }
+					 
+}
+async thumbBase64(buffer)
+{
+//const videoBuffer = fs.readFile(buffer);
+try {
+  const thumbContentFromBuffer = await this.geraThumb(buffer);
+  return thumbContentFromBuffer;
+} catch (error) {
+  throw new Error('Erro ao gerar thumb do arquivo local: '+error);
+}				   
+					   }					   
+					   
 
 
 async convertToMP4(audioSource) {
@@ -560,7 +585,7 @@ async instanceFind(key) {
 	ignoreGroup = existingSession.ignoreGroups	
 	
 	this.instance.mark = existingSession.messagesRead
-	this.instance.webhok = existingSession.webhook;
+	this.instance.webhook = existingSession.webhook;
 	this.instance.webhook_url = existingSession.webhookUrl
 	this.instance.webhook_events = existingSession.webhookEvents			
 			}
@@ -577,7 +602,7 @@ async instanceFind(key) {
 	ignoreGroup = false
 	
 	this.instance.mark = false
-	this.instance.webhok= false
+	this.instance.webhook= false
 	this.instance.webhook_url = false
 	this.instance.webhook_events = false			
 				
@@ -786,7 +811,7 @@ const filePath = path.join(folderPath, 'contacts.json');
         // on new mssage
         sock?.ev.on('messages.upsert', async (m) => {
         
-	  try{
+
 		
             if (m.type === 'prepend')
                 this.instance.messages.unshift(...m.messages)
@@ -830,7 +855,7 @@ const filePath = path.join(folderPath, 'contacts.json');
 					
                 }
 
-                if (config.base64===true) {
+                if (this.instance.webhook===true) {
                     switch (messageType) {
                         case 'imageMessage':
                             webhookData['msgContent'] = await downloadMessage(
@@ -843,6 +868,9 @@ const filePath = path.join(folderPath, 'contacts.json');
                                 msg.message.videoMessage,
                                 'video'
                             )
+				
+				webhookData['thumb']  = await this.thumbBase64(webhookData['msgContent'])
+							
                             break
                         case 'audioMessage':
                             webhookData['msgContent'] = await downloadMessage(
@@ -865,11 +893,7 @@ const filePath = path.join(folderPath, 'contacts.json');
                 await this.SendWebhook('message','messages.upsert', webhookData, this.key)
             })
 			
-		}
-		catch(e)
-			{
-				return;
-			}
+		
 
         })
 
