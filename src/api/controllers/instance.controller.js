@@ -33,7 +33,7 @@ let ignoreGroups
 if (req.body.ignoreGroups === null || req.body.ignoreGroups === undefined) {
   ignoreGroups =false
 } else {
-  ignoreGroups = true
+  ignoreGroups = req.body.ignoreGroups
 }
 let webhookEvents
 if (req.body.webhookEvents === null || req.body.webhookEvents === undefined) {
@@ -189,18 +189,19 @@ if (req.body.base64 === null || req.body.base64 === undefined) {
 
 if (index !== -1) {
 	
-	 const instance = new WhatsAppInstance(key, webhook, webhookUrl)
-	 WhatsAppInstances[key] = instance;
-    const data = await instance.init()
+
 	
 
   sessions[index] = { key, ignoreGroups, webhook, base64, webhookUrl, browser, webhookEvents, messagesRead,ignoreGroups};
 	
 	await fs.writeFile(filePath, JSON.stringify(sessions, null, 2), 'utf-8')
+	
+	const instance = WhatsAppInstances[key]
+    const data = await instance.init()
 	 res.json({
         error: false,
         message: 'Instancia editada',
-        key: data.key,
+        key: key,
         webhook: {
             enabled: webhook,
             webhookUrl: webhookUrl,
@@ -255,6 +256,7 @@ exports.getcode = async (req, res) =>
 			}
 		else
 			{
+
 const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.body.number)
 return res.json({
         error: false,
@@ -332,6 +334,7 @@ exports.qr = async (req, res) => {
 			
 	
     try {
+		instance.init()
         const qrcode = await WhatsAppInstances[req.query.key]?.instance.qr
         res.render('qrcode', {
             qrcode: qrcode,
@@ -380,6 +383,7 @@ exports.qrbase64 = async (req, res) => {
 			
 	
     try {
+		instance.init()
         const qrcode = await WhatsAppInstances[req.query.key]?.instance.qr
         res.json({
             error: false,

@@ -182,8 +182,9 @@ class WhatsAppInstance {
 					   
 async geraThumb(videoPath) {
 
+  const name = uuidv4();
   const tempDir = 'temp';  
-  const thumbPath = 'temp/thumb.png';  
+  const thumbPath = 'temp/'+name+'thumb.png';  
 	
 const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
   const base64 =  base64Regex.test(videoPath);
@@ -199,7 +200,7 @@ const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3
         const response = await axios.get(videoPath, { responseType: 'arraybuffer' });
 	
 		  
-		videoTempPath = path.join(tempDir, 'tempVideo.mp4');
+		videoTempPath = path.join(tempDir, name+'.mp4');
 		 videoBuffer = Buffer.from(response.data);
 		  
     	await fs.writeFile(videoTempPath, videoBuffer);
@@ -207,15 +208,16 @@ const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3
       } 
 	  else if(base64===true)
 		  {
-	videoTempPath = path.join(tempDir, 'tempVideo.mp4');
+	videoTempPath = path.join(tempDir, 'temp/'+name+'.mp4');
 const buffer = Buffer.from(videoPath, 'base64');
   await fs.writeFile(videoTempPath, buffer);
 		  }
 	  
 	  else {
         
-		videoTempPath = videoPath;  
-		  
+		
+		
+		  videoTempPath = videoPath
       }
      
 
@@ -247,7 +249,7 @@ const buffer = Buffer.from(videoPath, 'base64');
    
     return thumbContent;
   } catch (error) {
-    throw error;
+    console.log(error)
   }
 }				   
 
@@ -258,19 +260,20 @@ try {
   const thumbContentFromUrl = await this.geraThumb(videoUrl);
   return thumbContentFromUrl
 } catch (error) {
-  throw new Error('Erro ao gerar thumb da url: '+error);
+  console.log(error)
 }
 }
 
 					   
 async thumbBUFFER(buffer)
 {
-const videoBuffer = fs.readFile(buffer);
+
 try {
-  const thumbContentFromBuffer = await this.geraThumb(videoBuffer);
+	
+  const thumbContentFromBuffer = await this.geraThumb(buffer);
   return thumbContentFromBuffer;
 } catch (error) {
-  throw new Error('Erro ao gerar thumb do arquivo local: '+error);
+ console.log(error)
 }				   
 					 
 }
@@ -281,10 +284,63 @@ try {
   const thumbContentFromBuffer = await this.geraThumb(buffer);
   return thumbContentFromBuffer;
 } catch (error) {
-  throw new Error('Erro ao gerar thumb do arquivo local: '+error);
+ console.log(error)
 }				   
-					   }					   
+					   }
 					   
+async convertMP3(audioSource)
+{
+	
+	try {
+  const return_mp3 = await this.mp3(audioSource);
+  return return_mp3;
+} catch (error) {
+ console.log(error)
+}	
+	
+}
+async mp3(audioSource)
+{
+ const name = uuidv4();
+	try
+	{
+const mp3_temp = 'temp/'+name+'.mp3';
+const command = `${ffmpegPath.path}  -i ${audioSource} -acodec libmp3lame -ab 128k ${mp3_temp}`;
+    await new Promise((resolve, reject) => {
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          
+          reject(error);
+        } else {
+        
+          resolve();
+        }
+      });
+    });
+
+
+    
+
+ 
+    const audioContent = await fs.readFile(mp3_temp, { encoding: 'base64' });
+	  
+	
+
+   
+    await Promise.all([fs.unlink(mp3_temp), fs.unlink(audioSource)]);
+    
+   
+    return audioContent;
+  
+		
+		
+	}
+	catch(error)
+	{
+		console.log(error)	
+	}
+						   
+}
 
 
 async convertToMP4(audioSource) {
@@ -314,7 +370,7 @@ async convertToMP4(audioSource) {
     }
 
     const tempOutputFile = `temp/temp_output_${Date.now()}.opus`;
-	  const mp3_temp ='temp/temp_audio_input.mp3';
+	  const mp3_temp ='temp/'+name+'.mp3';
 
     const ffmpegCommand = `${ffmpegPath.path} -i "${mp3_temp}"  -c:a libopus -b:a 128k -ac 1 "${tempOutputFile}"`;
 
@@ -344,6 +400,7 @@ async convertToMP4(audioSource) {
 }
 
 async convertTovideoMP4(videoSource) {
+	 const name = uuidv4();
   try {
     let videoBuffer;
 
@@ -363,7 +420,7 @@ async convertTovideoMP4(videoSource) {
     }
 
     const tempOutputFile = `temp/temp_output_${Date.now()}.mp4`;
-	  const mp4 = 'temp/temp_audio_input.mp4';
+	  const mp4 = 'temp/'+name+'.mp4';
 
     const ffmpegCommand = `${ffmpegPath.path} -i "${mp4}"  -c:v libx264 -c:a aac -strict experimental -b:a 192k -movflags faststart -f mp4 "${tempOutputFile}"`;
 
@@ -484,7 +541,7 @@ async dataBase()
                 body,
                 instanceKey: key,
             })
-            .catch(() => { })
+            .catch((e) => {  })
 				
 			}
 			}
@@ -656,34 +713,36 @@ async instanceFind(key) {
             const { connection, lastDisconnect, qr } = update
 		
 			//console.log(update)	
-		//console.log(lastDisconnect?.error?.output?.statusCode)
+		
 
             if (connection === 'connecting')return 
 
             if (connection === 'close') {
-                // reconnect if not logged out
-                if (
-                    lastDisconnect?.error?.output?.statusCode !==
-                    DisconnectReason.loggedOut
-                ) {
-		//await this.deleteFolder('db/'+this.key)
+         
 		
-                    await this.init()
+        if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut) {
 		
-		await this.SendWebhook('connection','connection.update', {
-                    connection: connection,
-                }, this.key)
-                } else {
-		await this.deleteFolder('db/'+this.key)
-		if(!this.instance.deleted==true)
-		{
+					await this.deleteFolder('db/'+this.key)
+					await delay(550);
+					await this.init();	
+					this.instance.online = false
 		
-                    await this.init()
-		}
-                    this.instance.online = false
                 }
-
-               
+			else if(lastDisconnect?.error?.output?.statusCode===440)
+				 	{
+					return
+							   
+			 		}
+			else
+				{ 
+					await this.init();
+		
+				}
+						   
+           await this.SendWebhook('connection','connection.update', {
+                    connection: connection,
+					connection_code: lastDisconnect?.error?.output?.statusCode
+                }, this.key)    
                 
             } else if (connection === 'open') {
                
@@ -864,19 +923,22 @@ const filePath = path.join(folderPath, 'contacts.json');
                             )
                             break
                         case 'videoMessage':
-                            webhookData['msgContent'] = await downloadMessage(
+							const arquivo_video = await downloadMessage(
                                 msg.message.videoMessage,
                                 'video'
-                            )
+                            );
+							
+                            webhookData['msgContent'] = await fs.readFile(arquivo_video, { encoding: 'base64' });
 				
-				webhookData['thumb']  = await this.thumbBase64(webhookData['msgContent'])
+						webhookData['thumb']  = await this.thumbBase64(arquivo_video)
 							
                             break
                         case 'audioMessage':
-                            webhookData['msgContent'] = await downloadMessage(
+                        const arquivo_audio =    await downloadMessage(
                                 msg.message.audioMessage,
                                 'audio'
                             )
+							 webhookData['msgContent'] = await fs.readFile(arquivo_audio, { encoding: 'base64' });
                             break
 							 case 'documentMessage':
                             webhookData['msgContent'] = await downloadMessage(
