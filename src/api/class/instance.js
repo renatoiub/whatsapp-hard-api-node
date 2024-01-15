@@ -1191,6 +1191,13 @@ async lerMensagem(idMessage,to)
         if (result?.exists) return true
         throw new Error('no account exists')
     }
+
+    async checkWhatsapp(id) {
+        if (id.includes('@g.us')) return await this.instance.sock?.groupMetadata(id);
+        const [result] = await this.instance.sock?.onWhatsApp(id)
+        if (result?.exists) return result
+        throw new Error('no account exists')
+    }
 		
 		async verifyGroup(id) {
 		try{
