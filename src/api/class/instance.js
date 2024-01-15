@@ -1170,7 +1170,7 @@ try{
 			 throw new Error('no account exists') 
 		 }
   
-    else if (parseInt(ddd) <= 27 && comprimentoSemDDD < 9) 
+    else if (parseInt(ddd) <= 27 && comprimentoSemDDD < 9)
 		{
 			let novoNumero = n.substring(0, 2) + '9' + n.substring(2);
       		id = '55'+novoNumero
