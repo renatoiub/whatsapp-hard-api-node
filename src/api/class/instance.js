@@ -1135,6 +1135,57 @@ try{
     }
 
     getWhatsAppId(id) {
+		
+		
+
+  if (id.startsWith('55'))
+  {
+      const numero = id.slice(2);
+	  const ddd = numero.slice(0, 2);
+	  let n;
+	
+
+   const indice = numero.indexOf('@');
+	  
+	 if(indice>=1) 
+		 {
+			 
+		n = numero.slice(0, indice);
+		
+		 }
+	  else
+		  {
+			  n = numero;
+		  }
+
+    const comprimentoSemDDD = n.slice(2).length;
+	 
+	if(comprimentoSemDDD<8)
+		{
+			 throw new Error('no account exists')
+			
+		}
+	 else if(comprimentoSemDDD>9)
+		 {
+			 throw new Error('no account exists') 
+		 }
+  
+    else if (parseInt(ddd) <= 27 && comprimentoSemDDD < 9) 
+		{
+			let novoNumero = n.substring(0, 2) + '9' + n.substring(2);
+      		id = '55'+novoNumero
+		  
+      	}
+		
+		else if (parseInt(ddd) > 27 && comprimentoSemDDD > 8)
+		{
+			let novoNumero = n.substring(0, 2) + n.substring(3);
+			id = '55'+novoNumero;
+		}
+  
+		
+  }
+	
         if (id.includes('@g.us') || id.includes('@s.whatsapp.net')) return id
         return id.includes('-') ? `${id}@g.us` : `${id}@s.whatsapp.net`
     }
@@ -1188,8 +1239,14 @@ async lerMensagem(idMessage,to)
     async verifyId(id) {
         if (id.includes('@g.us')) return true
         const [result] = await this.instance.sock?.onWhatsApp(id)
-        if (result?.exists) return true
+        if (result?.exists)
+				{
+				  return this.getWhatsAppId(id)
+				}
+				 else
+				{
         throw new Error('no account exists')
+				}
     }
 		
 		async verifyGroup(id) {
