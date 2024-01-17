@@ -37,7 +37,7 @@ if (req.body.ignoreGroups === null || req.body.ignoreGroups === undefined) {
 }
 let webhookEvents
 if (req.body.webhookEvents === null || req.body.webhookEvents === undefined) {
-  webhookEvents =false
+  webhookEvents =[]
 } else {
   webhookEvents = req.body.webhookEvents
 }
@@ -153,7 +153,7 @@ if (req.body.ignoreGroups === null || req.body.ignoreGroups === undefined) {
 }
 let webhookEvents
 if (req.body.webhookEvents === null || req.body.webhookEvents === undefined) {
-  webhookEvents =false
+  webhookEvents =[]
 } else {
   webhookEvents = req.body.webhookEvents
 }
