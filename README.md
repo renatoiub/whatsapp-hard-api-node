@@ -151,7 +151,7 @@ Documentação:<br>
 </tr>
 <tr>
 <td>Send Link Preview</td>
-<td>❌</td>
+<td>✔</td>
 </tr>
 <tr>
 <td>Send Contact</td>
