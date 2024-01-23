@@ -256,7 +256,7 @@ exports.getcode = async (req, res) =>
 			}
 		else
 			{
-
+instance.init()				
 const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.body.number)
 return res.json({
         error: false,

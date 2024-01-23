@@ -635,8 +635,8 @@ async instanceFind(key) {
            b = {
   browser: {
     platform: existingSession.browser,
-    browser: 'chrome',
-    version: '22.5.0',
+    browser: 'Chrome',
+    version: '20.0.04',
   }
 }; 
 	ignoreGroup = existingSession.ignoreGroups	
@@ -718,7 +718,7 @@ async instanceFind(key) {
             if (connection === 'connecting')return 
 
             if (connection === 'close') {
-         
+        
 		
         if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut) {
 		
@@ -1159,7 +1159,7 @@ try{
 		  }
 
     const comprimentoSemDDD = n.slice(2).length;
-	 
+	console.log(comprimentoSemDDD) 
 	if(comprimentoSemDDD<8)
 		{
 			 throw new Error('no account exists')
@@ -1195,8 +1195,8 @@ try{
     }
 
 async deleteFolder(folder) {
-        
-	const folderPath = 	path.join(folder);
+     try{   
+	const folderPath = await path.join(folder);
 			
 const folderExists = await fs.access(folderPath).then(() => true).catch(() => false);
 
@@ -1206,7 +1206,7 @@ const folderExists = await fs.access(folderPath).then(() => true).catch(() => fa
 
             
             for (const file of files) {
-                const filePath = path.join(folderPath, file);
+                const  filePath = await path.join(folderPath, file);
                 await fs.unlink(filePath);
             }
 
@@ -1215,6 +1215,11 @@ const folderExists = await fs.access(folderPath).then(() => true).catch(() => fa
 	
 	
     }
+	 }
+	catch(e)
+		{
+			return;
+		}
 }
 		
 async lerMensagem(idMessage,to)
