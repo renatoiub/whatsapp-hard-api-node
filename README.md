@@ -81,7 +81,7 @@ group-participants.update<br>
 Documentação:<br>
 
 <ul dir="auto">
-<li><a target="_blank" href="https://meuzapp.com/hardapi">Obter a documentação atualizada</a></li>
+<li><a target="_blank" href="https://hardcodebr.com.br/hardapi">Obter a documentação atualizada</a></li>
 </ul>
 
 <br>
@@ -151,7 +151,7 @@ Documentação:<br>
 </tr>
 <tr>
 <td>Send Link Preview</td>
-<td>❌</td>
+<td>✔</td>
 </tr>
 <tr>
 <td>Send Contact</td>
