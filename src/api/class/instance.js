@@ -821,9 +821,9 @@ getWhatsAppId(id) {
         const comprimentoSemDDD = n.slice(2).length;
       
         if (comprimentoSemDDD < 8) {
-            throw new Error('no account exists');
+            throw new Error('no account exists!');
         } else if (comprimentoSemDDD > 9) {
-            throw new Error('no account exists');
+            throw new Error('no account exists.');
         } else if (parseInt(ddd) <= 27 && comprimentoSemDDD < 9) {
             let novoNumero = n.substring(0, 2) + '9' + n.substring(2);
             id = '55' + novoNumero;
