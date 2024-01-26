@@ -805,7 +805,8 @@ async getInstanceDetail(key) {
 }
 
 getWhatsAppId(id) {
-    if (id.startsWith('55')) {
+if (id.includes('@g.us')) return id;
+   else if (id.startsWith('55')) {
         const numero = id.slice(2);
         const ddd = numero.slice(0, 2);
         let n;
@@ -819,7 +820,7 @@ getWhatsAppId(id) {
         }
 
         const comprimentoSemDDD = n.slice(2).length;
-        console.log(comprimentoSemDDD);
+    
         if (comprimentoSemDDD < 8) {
             throw new Error('no account exists');
         } else if (comprimentoSemDDD > 9) {
@@ -831,10 +832,13 @@ getWhatsAppId(id) {
             let novoNumero = n.substring(0, 2) + n.substring(3);
             id = '55' + novoNumero;
         }
+	   return id.includes('-') ? `${id}@g.us` : `${id}@s.whatsapp.net`;
     }
-
-    if (id.includes('@g.us') || id.includes('@s.whatsapp.net')) return id;
+else
+   {
+   
     return id.includes('-') ? `${id}@g.us` : `${id}@s.whatsapp.net`;
+   }
 }
 
 getGroupId(id) {
