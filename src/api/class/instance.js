@@ -804,6 +804,7 @@ async getInstanceDetail(key) {
 }
 
 getWhatsAppId(id) {
+if (id.includes('@g.us')) return id;
     if (id.startsWith('55')) {
         const numero = id.slice(2);
         const ddd = numero.slice(0, 2);
@@ -832,7 +833,7 @@ getWhatsAppId(id) {
         }
     }
 
-    if (id.includes('@g.us') || id.includes('@s.whatsapp.net')) return id;
+   
     return id.includes('-') ? `${id}@g.us` : `${id}@s.whatsapp.net`;
 }
 
