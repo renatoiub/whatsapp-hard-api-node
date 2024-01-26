@@ -147,7 +147,7 @@ Documentação:<br>
 </tr>
 <tr>
 <td>Send List (beta)</td>
-<td>✔</td>
+<td><font style="color:green">✔</font></td>
 </tr>
 <tr>
 <td>Send Link Preview</td>
