@@ -160,7 +160,9 @@ exports.SetStatus = async (req, res) => {
     const data = await WhatsAppInstances[req.query.key]?.setStatus(
         req.body.status,
         req.body.id,
-		req.body.delay  
+		req.body.type,
+		req.body.delay
+		
     )
     return res.status(201).json({ error: false, data: data })
 }
