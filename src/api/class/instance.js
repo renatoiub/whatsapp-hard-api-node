@@ -1,4 +1,3 @@
-//update
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg');
 const { exec } = require('child_process');
 const fetch = require('node-fetch');
