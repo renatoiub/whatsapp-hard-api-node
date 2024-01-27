@@ -911,7 +911,7 @@ async sendTextMessage(data) {
         await this.verifyGroup(this.getGroupId(to));
     }
     if (data.options && data.options.delay && data.options.delay > 0) {
-        await this.setStatus('composing', to, data.options.delay);
+        await this.setStatus('composing', to, data.typeId, data.options.delay);
     }
 
     let mentions = false;
@@ -1395,7 +1395,7 @@ async sendListMessage(to, type, options, groupOptions, data) {
         await this.verifyGroup(this.getGroupId(to));
     }
     if (options && options.delay && options.delay > 0) {
-        await this.setStatus('composing', to, options.delay);
+        await this.setStatus('composing', to, type, options.delay);
     }
 
     let mentions = false;
@@ -1473,15 +1473,29 @@ async createJid(number) {
     }
 }
 
-async setStatus(status, to, pause = false) {
-    const number = await this.createJid(to);
-    await this.verifyId(this.getWhatsAppId(to));
-    const result = await this.instance.sock?.sendPresenceUpdate(status, number);
+async setStatus(status, to, type, pause = false) {
+
+	try{
+	if (type === 'user') {
+        await this.verifyId(this.getWhatsAppId(to));
+        to = this.getWhatsAppId(to);
+    } else {
+        to = this.getGroupId(to);
+
+        await this.verifyGroup(this.getGroupId(to));
+    }	
+
+    const result = await this.instance.sock?.sendPresenceUpdate(status, to);
     if (pause > 0) {
         await delay(pause * 1000);
-        await this.instance.sock?.sendPresenceUpdate('paused', number);
+        await this.instance.sock?.sendPresenceUpdate('paused', to);
     }
     return result;
+	}
+	catch(e)
+	{
+	throw new Error('Falha ao enviar a presença, verifique o id e tente novamente')
+	}
 }
 
 async updateProfilePicture(to, url, type) {
