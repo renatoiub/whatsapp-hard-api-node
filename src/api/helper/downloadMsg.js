@@ -14,13 +14,13 @@ module.exports = async function downloadMessage(msg, msgType) {
     }
 	if(msgType==='video')
 		{
-			const name = 'temp'+uuidv4()+'.mp4';
+			const name = 'temp/'+uuidv4()+'.mp4';
 	 await fs.writeFile(name, buffer);
 			return name;
 		}
 	if(msgType ==='audio')
 		{
-			const name = 'temp'+uuidv4()+'.ogg';
+			const name = 'temp/'+uuidv4()+'.ogg';
 	 await fs.writeFile(name, buffer);
 			return name;
 		}
