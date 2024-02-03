@@ -663,14 +663,13 @@ setHandler() {
                         webhookData['thumb'] = await this.thumbBase64(arquivo_video);
 
                         break;
-                    case 'audioMessage':
+			case 'audioMessage':
                         const arquivo_audio = await downloadMessage(
                             msg.message.audioMessage,
                             'audio'
                         );
-                        webhookData['msgContent'] = await fs.readFile(arquivo_audio, {
-                            encoding: 'base64',
-                        });
+			const convert = await this.mp3(arquivo_audio);
+                        webhookData['msgContent'] = convert;
                         break;
                     case 'documentMessage':
                         webhookData['msgContent'] = await downloadMessage(
