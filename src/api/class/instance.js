@@ -240,6 +240,7 @@ async mp3(audioSource) {
 					   
 					   
 async convertToMP4(audioSource) {
+	 const name = uuidv4();
   try {
     let audioBuffer;
     if (Buffer.isBuffer(audioSource)) {
@@ -257,7 +258,7 @@ async convertToMP4(audioSource) {
       audioBuffer = audioSource;
     }
 
-    const tempOutputFile = `temp/temp_output_${Date.now()}.opus`;
+    const tempOutputFile = `temp/temp_output_${name}.opus`;
     const mp3_temp = 'temp/' + name + '.mp3';
 
     const ffmpegCommand = `${ffmpegPath.path} -i "${mp3_temp}" -c:a libopus -b:a 128k -ac 1 "${tempOutputFile}"`;
@@ -302,7 +303,7 @@ async convertTovideoMP4(videoSource) {
       videoBuffer = videoSource;
     }
 
-    const tempOutputFile = `temp/temp_output_${Date.now()}.mp4`;
+    const tempOutputFile = `temp/temp_output_${name}.mp4`;
     const mp4 = 'temp/' + name + '.mp4';
 
     const ffmpegCommand = `${ffmpegPath.path} -i "${mp4}" -c:v libx264 -c:a aac -strict experimental -b:a 192k -movflags faststart -f mp4 "${tempOutputFile}"`;
