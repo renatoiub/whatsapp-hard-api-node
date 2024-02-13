@@ -518,7 +518,7 @@ setHandler() {
         if (connection === 'connecting') return;
 
         if (connection === 'close') {
-            if (status === DisconnectReason.loggedOut || status === 405 || status === 428) {
+            if (status === DisconnectReason.loggedOut || status === 405 || status === 402 || status === 403) {
                 await this.deleteFolder('db/' + this.key);
                 await delay(1000);
                 this.instance.online = false;
