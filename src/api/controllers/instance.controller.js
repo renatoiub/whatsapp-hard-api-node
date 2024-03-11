@@ -119,6 +119,7 @@ exports.getcode = async (req, res) => {
                     message: 'Telefone já conectado'
                 });
             } else {
+                const number = await WhatsAppInstances[req.query.key].getWhatsAppId(req.body.number);
                 const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.body.number);
                 return res.json({
                     error: false,
