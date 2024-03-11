@@ -120,7 +120,7 @@ exports.getcode = async (req, res) => {
                 });
             } else {
                 const number = await WhatsAppInstances[req.query.key].getWhatsappCode(req.body.number);
-                const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(req.body.number);
+                const code = await WhatsAppInstances[req.query.key].instance?.sock?.requestPairingCode(number);
                 return res.json({
                     error: false,
                     code: code
