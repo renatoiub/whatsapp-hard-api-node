@@ -830,8 +830,13 @@ getWhatsappCode(id)
             let novoNumero = n.substring(0, 2) + n.substring(3);
             id = '55' + novoNumero;
         }
+	 console.log(id);
+	 return id;
     }
-	return id;	
+		else
+ {
+	return id;
+ }
 	}
 getWhatsAppId(id) {
     if (id.startsWith('55')) {
