@@ -94,7 +94,7 @@ group-participants.update<br>
 Documentação:<br>
 
 <ul dir="auto">
-<li><a target="_blank" href="https://meuzapp.com/hardapi">Obter a documentação atualizada</a></li>
+<li><a target="_blank" href="https://api.postman.com/collections/26659340-3267c07d-49b4-432b-96d9-8a4cc94b3848?access_key=PMAT-01HHZBJN72MNQ4Z7J48CEFBCNP">Json Postman</a></li>
 </ul>
 
 <br>
