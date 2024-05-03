@@ -32,9 +32,9 @@
     "author": "Renato Freitas",
     "license": "MIT",
     "dependencies": {
-      	"@whiskeysockets/baileys": "^6.6.0",
+      	"@whiskeysockets/baileys": "6.6.0",
         "@adiwajshing/keyed-db": "^0.2.4",
-		"@ffmpeg-installer/ffmpeg": "^1.1.0",
+	"@ffmpeg-installer/ffmpeg": "^1.1.0",
         "axios": "^1.1.3",
         "dotenv": "^16.0.3",
         "ejs": "^3.1.7",
