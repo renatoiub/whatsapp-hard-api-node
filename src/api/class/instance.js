@@ -402,7 +402,7 @@ async SendWebhook(type, hook, body, key) {
 }
 
 async instanceFind(key) {
-    const filePath = path.join('sessions.json');
+    const filePath = path.join('db/sessions.json');
 
     const data = await fs.readFile(filePath, 'utf-8');
     if (data) {
@@ -438,7 +438,7 @@ async instanceFind(key) {
 
 async init() {
     const ver = await fetchLatestBaileysVersion();
-    const filePath = path.join('sessions.json');
+    const filePath = path.join('db/sessions.json');
 
     const data = await fs.readFile(filePath, 'utf-8');
     if (!data) {
@@ -753,7 +753,7 @@ setHandler() {
 }
 
 async deleteInstance(key) {
-    const filePath = path.join('sessions.json');
+    const filePath = path.join('db/sessions.json');
 
     let data = await fs.readFile(filePath, 'utf-8');
     let sessions = JSON.parse(data);
