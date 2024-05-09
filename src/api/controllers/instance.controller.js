@@ -15,7 +15,7 @@ exports.init = async (req, res) => {
     let base64 = req.body.base64 || false;
 
     const key = req.body.key;
-    const filePath = path.join('sessions.json');
+    const filePath = path.join('db/sessions.json');
 
     const data = await fs.readFile(filePath, 'utf-8');
     const sessions = JSON.parse(data);
@@ -30,7 +30,7 @@ exports.init = async (req, res) => {
     } else {
         const appUrl = config.appUrl || req.protocol + '://' + req.headers.host;
 
-        const filePath = path.join('sessions.json');
+        const filePath = path.join('db/sessions.json');
         const dataSession = await fs.readFile(filePath, 'utf-8');
         const sessions = JSON.parse(dataSession);
 
@@ -70,7 +70,7 @@ exports.editar = async (req, res) => {
     let base64 = req.body.base64 || false;
 
     const key = req.body.key;
-    const filePath = path.join('sessions.json');
+    const filePath = path.join('db/sessions.json');
     const data = await fs.readFile(filePath, 'utf-8');
     const sessions = JSON.parse(data);
     const index = sessions.findIndex(session => session.key === key);
