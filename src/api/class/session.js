@@ -12,7 +12,7 @@ class Session {
         let allSessions = [];
 
         try {
-        const filePath = 'sessions.json'; 
+        const filePath = 'db/sessions.json'; 
 
             
             const fileExists = await fs.access(filePath).then(() => true).catch(() => false);
@@ -25,7 +25,7 @@ class Session {
                
                 await fs.writeFile(filePath, '[]', 'utf-8');
             }
-            const data = await fs.readFile('sessions.json', 'utf-8');
+            const data = await fs.readFile('db/sessions.json', 'utf-8');
             allSessions = JSON.parse(data);
 			
 			
