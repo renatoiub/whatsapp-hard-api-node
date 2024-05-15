@@ -1043,13 +1043,16 @@ async sendMediaFile(data, origem) {
             origem = data.url;
         }
     } else if (origem === 'base64') {
-        mimetype = await getMimeTypeFromBase64(base64String);
+        if(!data.filename || data.filename ==='')
+			{throw new Error('Nome do arquivo é obrigatorio');}
+		
+		mimetype = getMIMEType.lookup(data.filename);
 
         if (!myArray.includes(mimetype.trim())) {
             throw new Error('Arquivo ' + mimetype + ' não é permitido para ' + data.type);
         }
 
-        origem = data.base64;
+       
     }
 
     if (data.type === 'audio') {
@@ -1091,11 +1094,28 @@ async sendMediaFile(data, origem) {
             thumb = await this.thumbBUFFER(video);
         }
     } else {
+	
+		if(!data.base64string)
+			{
         type = {
             url: data.url,
         };
 
         filename = await this.getFileNameFromUrl(data.url);
+			}
+		else
+			{
+			
+	
+	const buffer = Buffer.from(data.base64string, 'base64');			
+
+    filename = data.filename;	
+    const file = path.join('temp/', filename);
+								
+	const join = await fs.writeFile(file, buffer);
+	type = await fs.readFile('temp/'+filename);
+				
+			}
     }
 
     send = await this.instance.sock?.sendMessage(
@@ -1109,7 +1129,7 @@ async sendMediaFile(data, origem) {
         }, quoted
     );
 
-    if (data.type === 'audio' || data.type === 'video') {
+    if (data.type === 'audio' || data.type === 'video' || data.type=='document') {
         if (data.type === 'video') {
             const ms = JSON.parse(JSON.stringify(send));
             ms.message.videoMessage.thumb = thumb;
