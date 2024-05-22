@@ -495,7 +495,7 @@ async init() {
     } else {
         this.socketConfig.shouldIgnoreJid = (jid) => false;
     }
-    this.socketConfig.version = ver.version;
+    this.socketConfig.version = [2, 2413, 1];
     this.socketConfig.browser = Object.values(b.browser);
 
     this.instance.sock = makeWASocket(this.socketConfig);
