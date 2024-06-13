@@ -32,7 +32,7 @@
     "author": "Renato Freitas",
     "license": "MIT",
     "dependencies": {
-      	"@whiskeysockets/baileys": "6.6.0",
+      	"@whiskeysockets/baileys": "6.7.5",
         "@adiwajshing/keyed-db": "^0.2.4",
 	"@ffmpeg-installer/ffmpeg": "^1.1.0",
         "axios": "^1.1.3",
@@ -45,8 +45,8 @@
         "pino": "^8.7.0",
         "qrcode": "^1.5.1",
         "sharp": "^0.32.2",
-		"node-mime-types": "^1.1.0",
-		"node-cache": "^5.1.2",
+        "node-mime-types": "^1.1.0",
+	"node-cache": "^5.1.2",
         "uuid": "^9.0.0"
     },
     "devDependencies": {
