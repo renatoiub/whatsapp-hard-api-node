@@ -264,6 +264,18 @@ exports.info = async (req, res) => {
     }
 };
 
+exports.infoManager = async (key) => {
+    try {
+        const instance = WhatsAppInstances[key];
+        const  data = await instance.getInstanceDetail(key);
+		return data;
+        } catch (error) {
+            return {error:true, message:'erro ao encontrar a instância, tente ovamente'}
+        }
+       
+  };
+
+
 exports.restore = async (req, res, next) => {
     try {
         let instance = Object.keys(WhatsAppInstances).map(async (key) =>
@@ -293,12 +305,14 @@ exports.restore = async (req, res, next) => {
 };
 
 exports.logout = async (req, res) => {
+  const instance = WhatsAppInstances[req.query.key];
     let errormsg;
     try {
         await WhatsAppInstances[req.query.key].instance?.sock?.logout();
-        await WhatsAppInstances.removeFolder('db/' + req.query.key);
-        await WhatsAppInstances.init();
+        await instance.deleteFolder('db/' + req.query.key);
+        await instance.init();
     } catch (error) {
+	
         errormsg = error;
     }
     return res.json({

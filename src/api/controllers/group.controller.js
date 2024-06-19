@@ -84,7 +84,7 @@ exports.getAllGroups = async (req, res) => {
     }
     return res.json({
         error: false,
-        message: 'Grupos encontrado',
+        message: 'Grupos encontrados',
        data,
     })
 }

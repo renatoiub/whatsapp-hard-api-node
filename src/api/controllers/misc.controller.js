@@ -1,8 +1,6 @@
 exports.onWhatsapp = async (req, res) => {
     // eslint-disable-next-line no-unsafe-optional-chaining
-    const data = await WhatsAppInstances[req.query.key]?.verifyId(
-        WhatsAppInstances[req.query.key]?.getWhatsAppId(req.body.id)
-    )
+    const data = await WhatsAppInstances[req.query.key]?.verifyId(req.body.id)
     return res.status(201).json({ error: false, data: data })
 }
 
@@ -61,6 +59,16 @@ exports.updateProfilePicture = async (req, res) => {
     )
     return res.status(201).json({ error: false, data: data })
 }
+
+exports.updateProfilePictureManager = async (instanceKey, id, url, type) => {
+    try {
+        const data = await WhatsAppInstances[instanceKey].updateProfilePicture(id, url, type);
+		return data
+    } catch (error) {
+         return { error: true, data: error };
+    }
+};
+
 
 exports.getUserOrGroupById = async (req, res) => {
     const data = await WhatsAppInstances[req.query.key].getUserOrGroupById(

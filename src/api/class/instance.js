@@ -4,8 +4,12 @@ const fetch = require('node-fetch');
 const QRCode = require('qrcode');
 const pino = require('pino');
 const { promisify } = require('util');
-const cach = require('node-cache');
-const msgRetryCounterCache = new cach();
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL:  86400 });
+const GroupsCache = new NodeCache({ stdTTL:  20 });
+const GroupsMetaDados = new NodeCache({ stdTTL:  3600 });
+const schedule = require('node-schedule');
+
 
 let intervalStore = [];
 
@@ -14,6 +18,8 @@ const {
     DisconnectReason,
     isJidUser,
     isJidGroup,
+	jid,
+	isJidBroadcast,
     makeInMemoryStore,
     proto,
     delay,
@@ -44,11 +50,63 @@ const util = require('util');
 const url = require('url');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-dados.readFromFile('db/mensagens.json');
 
-setInterval(() => {
-    dados.writeToFile('db/mensagens.json');
-}, 7200000);
+
+
+
+async function clear() {
+const mainDirectoryPath = 'db/';
+const filesToExclude = ['creds.json', 'contacts.json', 'groups.json'];
+console.log('Evento iniciado as 14:00')
+  try {
+    const folders = await fs.readdir(mainDirectoryPath);
+    if (folders.length === 0) {
+     
+      return;
+    }
+
+   
+    for (const folder of folders) {
+      const folderPath = path.join(mainDirectoryPath, folder);
+     
+
+      try {
+        const stats = await fs.stat(folderPath);
+        if (stats.isDirectory()) {
+        
+          const files = await fs.readdir(folderPath);
+
+         
+
+          for (const file of files) {
+            if (!filesToExclude.includes(file)) {
+              const filePath = path.join(folderPath, file);
+              
+              try {
+                await fs.unlink(filePath);
+               
+              } catch (err) {
+                
+              }
+            } else {
+              
+            }
+          }
+        } else {
+          
+        }
+      } catch (err) {
+        
+      }
+    }
+  } catch (err) {
+   
+  }
+}
+
+
+const job = schedule.scheduleJob('0 3 * * *', clear);
+
 
 
 
@@ -56,12 +114,14 @@ class WhatsAppInstance {
 socketConfig = {
     defaultQueryTimeoutMs: undefined,
     printQRInTerminal: false,
-    logger: pino({
-        level: config.log.level,
+	logger: pino({
+    level: config.log.level,
     }),
+	
 
     // markOnlineOnConnect: false
-    msgRetryCounterCache: msgRetryCounterCache,
+    msgRetryCounterCache: cache,
+	forceGroupsPrekeys : false,
     getMessage: (key) => {
         return (dados.loadMessage(key.remoteJid, key.id))?.message || undefined;
     },
@@ -116,7 +176,7 @@ axiosInstance = axios.create({
     baseURL: config.webhookUrl,
 });
 
-constructor(key, allowWebhook, webhook) {
+constructor(key, allowWebhook, webhook,cacheDuration = 24 * 60 * 60 * 1000) {
     this.key = key ? key : uuidv4();
     this.instance.customWebhook = this.webhook ? this.webhook : webhook;
     this.allowWebhook = config.webhookEnabled ? config.webhookEnabled : allowWebhook;
@@ -128,6 +188,7 @@ constructor(key, allowWebhook, webhook) {
             baseURL: webhook,
         });
     }
+	
 }
 
 async geraThumb(videoPath) {
@@ -491,18 +552,29 @@ async init() {
 
     this.socketConfig.auth = this.authState.state;
     if (ignoreGroup === true) {
-        this.socketConfig.shouldIgnoreJid = (jid) => !isJidUser(jid);
+		this.socketConfig.shouldIgnoreJid = (jid) => {
+          const isGroupJid = isJidGroup(jid);
+          const isBroadcast = isJidBroadcast(jid);
+		  const isNewsletter = jid.includes('newsletter');	
+          return isGroupJid || isBroadcast || isNewsletter ;
+        }
     } else {
-        this.socketConfig.shouldIgnoreJid = (jid) => false;
+      
+		this.socketConfig.shouldIgnoreJid = (jid) => {
+          const isNewsletter = jid.includes('newsletter');
+          const isBroadcast = isJidBroadcast(jid);
+          return  isBroadcast || isNewsletter ;
+		
+        }
+		
     }
     this.socketConfig.version = [2, 2413, 1];
     this.socketConfig.browser = Object.values(b.browser);
-
+	this.socketConfig.emitOwnEvents = true;
     this.instance.sock = makeWASocket(this.socketConfig);
-
-    dados?.bind(this.instance.sock?.ev);
-
-    this.setHandler();
+	const dados = makeInMemoryStore({ pino });
+    this.setHandler(); 
+ 	dados?.bind(this.instance.sock?.ev);
     return this;
 }
 
@@ -549,11 +621,12 @@ setHandler() {
             }, this.key);
         }
     });
+		
 
-    // sending presence
-    sock?.ev.on('presence.update', async (json) => {
+
+sock?.ev.on('presence.update', async (json) => {
         await this.SendWebhook('presence', 'presence.update', json, this.key);
-    });
+ });
 
     sock?.ev.on('contacts.upsert', async (contacts) => {
         let folderPath;
@@ -617,12 +690,16 @@ setHandler() {
 
     // on new mssage
     sock?.ev.on('messages.upsert', async (m) => {
+	
         if (m.type === 'prepend') this.instance.messages.unshift(...m.messages);
         if (m.type !== 'notify') return;
 
         this.instance.messages.unshift(...m.messages);
+	
 
         m.messages.map(async (msg) => {
+	
+	
             if (!msg.message) return;
 
             if (this.instance.mark === true) {
@@ -684,6 +761,8 @@ setHandler() {
                 }
             }
 
+//console.log(webhookData);
+
             await this.SendWebhook('message', 'messages.upsert', webhookData, this.key);
         });
     });
@@ -722,30 +801,39 @@ setHandler() {
     });
 
     sock?.ev.on('groups.upsert', async (groupUpsert) => {
+	
         try {
             await this.SendWebhook('updateGroups', 'groups.upsert', {
                 data: groupUpsert,
             }, this.key);
+			await this.updateGroupData()
+			GroupsMetaDados.flushAll();
         } catch (e) {
             return;
         }
     });
 
     sock?.ev.on('groups.update', async (groupUpdate) => {
+	
         try {
             await this.SendWebhook('updateGroups', 'groups.update', {
                 data: groupUpdate,
             }, this.key);
+			await this.updateGroupData()
+			GroupsMetaDados.flushAll();
         } catch (e) {
             return;
         }
     });
 
     sock?.ev.on('group-participants.update', async (groupParticipants) => {
+	
         try {
             await this.SendWebhook('group-participants', 'group-participants.update', {
                 data: groupParticipants,
             }, this.key);
+			await this.updateGroupData()
+			GroupsMetaDados.flushAll();
         } catch (e) {
             return;
         }
@@ -882,38 +970,59 @@ async lerMensagem(idMessage, to) {
     }
 }
 
-async verifyId(id) {
-    if (id.includes('@g.us')) return true;
-    const [result] = await this.instance.sock?.onWhatsApp(id);
-    if (result?.exists) {
-        return this.getWhatsAppId(id);
-    } else {
-        throw new Error('no account exists');
+ async verifyId(id) {
+        const cachedResult = await this.verifyCache(id);
+        if (cachedResult) {
+			
+            return cachedResult.jid;
+			
+        } else {
+            try {
+                const [result] = await this.instance.sock?.onWhatsApp(id);
+			
+                if (result.exists) {
+                    await this.salvaCache(id, result);
+                    return result.jid;
+                } else {
+			
+                    throw new Error('O número:'+id+' não é um Whatsapp Valido');
+                }
+            } catch (error) {
+                throw new Error('O número:'+id+' não é um Whatsapp Valido');
+            }
+        }
     }
+
+    async verifyCache(id) {
+        const cachedItem = cache.get(id);
+
+        if (cachedItem) {
+           
+            return cachedItem;
+        } else {
+           
+            return null;
+        }
+    }
+
+    async salvaCache(id, result) {
+        cache.set(id, result);
+        
 }
 
-async verifyGroup(id) {
-    try {
-        const res = await Promise.race([
-            this.instance.sock?.groupMetadata(id),
-            new Promise((_, reject) => setTimeout(() => reject(), 5000))
-        ]);
-        return res;
-    } catch (error) {
-        throw new Error('Grupo não existe');
-    }
-}
+
+
 
 async sendTextMessage(data) {
     let to = data.id;
 
     if (data.typeId === 'user') {
-        await this.verifyId(this.getWhatsAppId(to));
-        to = this.getWhatsAppId(to);
+      to = await this.verifyId(to);
+       
     } else {
-        to = this.getGroupId(to);
-
-        await this.verifyGroup(this.getGroupId(to));
+        
+        await this.verifyGroup(to);
+		
     }
     if (data.options && data.options.delay && data.options.delay > 0) {
         await this.setStatus('composing', to, data.typeId, data.options.delay);
@@ -965,11 +1074,11 @@ async sendMediaFile(data, origem) {
     let to = data.id;
 
     if (data.typeId === 'user') {
-        await this.verifyId(this.getWhatsAppId(to));
-        to = this.getWhatsAppId(to);
+     to = await this.verifyId(to);
+       
     } else {
-        to = this.getGroupId(to);
-        await this.verifyGroup(this.getGroupId(to));
+      
+        await this.verifyGroup(to);
     }
 
     let caption = '';
@@ -1162,11 +1271,11 @@ async GetFileMime(arquivo) {
 
 async sendMedia(to, userType, file, type, caption = '', replyFrom = false, d = false) {
     if (userType === 'user') {
-        await this.verifyId(this.getWhatsAppId(to));
-        to = this.getWhatsAppId(to);
+       to = await this.verifyId(to);
+        
     } else {
-        to = this.getGroupId(to);
-        await this.verifyGroup(this.getGroupId(to));
+       
+        await this.verifyGroup(to);
     }
 
     const acepty = ['audio', 'document', 'video', 'image'];
@@ -1318,19 +1427,16 @@ async convertemp4(file, retorno) {
 }
 
 async DownloadProfile(of) {
-    await this.verifyId(this.getWhatsAppId(of));
-    const ppUrl = await this.instance.sock?.profilePictureUrl(
-        this.getWhatsAppId(of),
+   of =  await this.verifyId(of);
+    const ppUrl = await this.instance.sock?.profilePictureUrl(of,
         'image'
     );
     return ppUrl;
 }
 
 async getUserStatus(of) {
-    await this.verifyId(this.getWhatsAppId(of));
-    const status = await this.instance.sock?.fetchStatus(
-        this.getWhatsAppId(of)
-    );
+    of = await this.verifyId(of);
+    const status = await this.instance.sock?.fetchStatus(of)
     return status;
 }
 
@@ -1354,10 +1460,6 @@ async contacts() {
     }
 }
 
-async chats() {
-    const status = 'retorno de chats';
-    return status;
-}
 
 async blockUnblock(to, data) {
     try {
@@ -1365,11 +1467,8 @@ async blockUnblock(to, data) {
             data = 'unblock';
         }
 
-        await this.verifyId(this.getWhatsAppId(to));
-        const status = await this.instance.sock?.updateBlockStatus(
-            this.getWhatsAppId(to),
-            data
-        );
+        to = await this.verifyId(to);
+        const status = await this.instance.sock?.updateBlockStatus(to, data);
         return status;
     } catch (e) {
         return {
@@ -1380,9 +1479,8 @@ async blockUnblock(to, data) {
 }
 
 async sendButtonMessage(to, data) {
-    await this.verifyId(this.getWhatsAppId(to));
-    const result = await this.instance.sock?.sendMessage(
-        this.getWhatsAppId(to),
+   to = await this.verifyId(to);
+    const result = await this.instance.sock?.sendMessage(to,
         {
             templateButtons: processButton(data.buttons),
             text: data.text ?? '',
@@ -1394,10 +1492,9 @@ async sendButtonMessage(to, data) {
 }
 
 async sendContactMessage(to, data) {
-    await this.verifyId(this.getWhatsAppId(to));
+    to = await this.verifyId(to);
     const vcard = generateVC(data);
-    const result = await this.instance.sock?.sendMessage(
-        await this.getWhatsAppId(to),
+    const result = await this.instance.sock?.sendMessage(to,
         {
             contacts: {
                 displayName: data.fullName,
@@ -1413,11 +1510,11 @@ async sendContactMessage(to, data) {
 
 async sendListMessage(to, type, options, groupOptions, data) {
     if (type === 'user') {
-        await this.verifyId(this.getWhatsAppId(to));
-        to = this.getWhatsAppId(to);
+      to =  await this.verifyId(to);
+       
     } else {
-        to = this.getGroupId(to);
-        await this.verifyGroup(this.getGroupId(to));
+        
+       await this.verifyGroup(to);
     }
     if (options && options.delay && options.delay > 0) {
         await this.setStatus('composing', to, type, options.delay);
@@ -1472,7 +1569,7 @@ async sendListMessage(to, type, options, groupOptions, data) {
 }
 
 async sendMediaButtonMessage(to, data) {
-    await this.verifyId(this.getWhatsAppId(to));
+   to = await this.verifyId(to);
 
     const result = await this.instance.sock?.sendMessage(
         this.getWhatsAppId(to), {
@@ -1502,12 +1599,11 @@ async setStatus(status, to, type, pause = false) {
 
 	try{
 	if (type === 'user') {
-        await this.verifyId(this.getWhatsAppId(to));
-        to = this.getWhatsAppId(to);
+       to = await this.verifyId(to);
+      
     } else {
-        to = this.getGroupId(to);
-
-        await this.verifyGroup(this.getGroupId(to));
+       
+        await this.verifyGroup(to);
     }	
 
     const result = await this.instance.sock?.sendPresenceUpdate(status, to);
@@ -1524,13 +1620,14 @@ async setStatus(status, to, type, pause = false) {
 }
 
 async updateProfilePicture(to, url, type) {
+
     try {
-        let to
+       
         if (type === 'user') {
-            await this.verifyId(this.getWhatsAppId(to));
-            to = this.getWhatsAppId(to);
+	 		to = await this.verifyId(this.getWhatsAppId(to));
+           
         } else {
-            to = this.getGroupId(to);
+           
             await this.verifyGroup(to);
         }
 
@@ -1543,6 +1640,7 @@ async updateProfilePicture(to, url, type) {
             message: 'Foto alterada com sucesso!',
         };
     } catch (e) {
+		console.log(e)
         return {
             error: true,
             message: 'Unable to update profile picture',
@@ -1645,33 +1743,128 @@ async updateProfilePicture(to, url, type) {
         }
     }
 
-async groupFetchAllParticipating()
-{
-	try{
-		const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		return result
-		
-	}
-	catch(e)
-		{
-		return {
-                error: true,
-                message:
-                    'Grupo não encontrado.',
-            }
-		
+async groupFetchAllParticipating() {
+	
+		const cacheDir = 'db/' + this.key;
+        const cacheFile = path.join(cacheDir, 'groups.json');
+
+       
+        try {
 			
-		}
+            await fs.access(cacheFile);
+            const data = await fs.readFile(cacheFile, 'utf-8');
+            return JSON.parse(data);
+        } catch (e) {
+			
+           try {
+            await fs.access(cacheDir);
+        } catch (e) {
+            await fs.mkdir(cacheDir, { recursive: true });
+        }
+		const checkEvent = await GroupsCache.get(this.key);
+		
+        if (!checkEvent) {
+			
+           await GroupsCache.set(this.key, true);
+        }
+		
+		const result = await this.instance.sock?.groupFetchAllParticipating();
+		
+		 if (result && Object.keys(result).length > 0) {
+            await fs.writeFile(cacheFile, JSON.stringify(result), 'utf-8');
+		
+		return result;
+        } else {
+            
+        }	
+			
+     }
+}
+         
+async  updateGroupData() {
+		await delay(1000);
+   
+    if (!this.key) {
+        return;
+    }
+
+   
+    
+    const cacheDir = 'db/' + this.key;
+    const cacheFile = path.join(cacheDir, 'groups.json');
+
+    let result;
+
+    try {
+      
+        const checkEvent = GroupsCache.get(this.key);
+       
+
+        if (checkEvent) {
+           
+            return false; 
+        }
+
+       
+        result = await this.instance.sock?.groupFetchAllParticipating();
+
+      
+        try {
+            await fs.access(cacheDir);
+        } catch (e) {
+            await fs.mkdir(cacheDir, { recursive: true });
+        }
+
+       
+        if (result && Object.keys(result).length > 0) {
+            await fs.writeFile(cacheFile, JSON.stringify(result), 'utf-8');
+           
+        } else {
+            
+        }
+    } catch (e) {
+       
+    } finally {
+        
+        GroupsCache.set(this.key, true);
+    }
+
+    return result;
 }
 
-    async addNewParticipant(id, users) {
+async verifyGroup(id) {
+	
+    try {
+		
+		if(GroupsMetaDados.get(id+this.key))
+			{
+				return true
+			}
+    const result = await this.groupFetchAllParticipating()
+		if(result.hasOwnProperty(id))
+		{
+			
+		GroupsMetaDados.set(id+this.key, true);	
+        return true;
+		}
+		else
+		{
+			  throw new Error('Grupo não existe');	
+		}
+    } catch (error) {
+		console.log(error)
+
+        throw new Error('Grupo não existe');
+    }
+}
+
+
+	
+ 
+ async addNewParticipant(id, users) {
 		
         try {
-			const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		if(result.hasOwnProperty(this.getGroupId(id)))
-		{
+		await this.verifyGroup(id); 
 			
             const res = await this.instance.sock?.groupParticipantsUpdate(
               this.getGroupId(id),
@@ -1680,17 +1873,8 @@ async groupFetchAllParticipating()
 				  
             )
             return res
-		}
-			else
-			{
-			return {
-                error: true,
-                message:
-                    'Grupo não encontrado.',
-            }
-			
-			}
-        } catch {
+		}			
+         catch {
             return {
                 error: true,
                 message:
@@ -1702,11 +1886,7 @@ async groupFetchAllParticipating()
     async makeAdmin(id, users) {
 		
         try {
-			const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		if(result.hasOwnProperty(this.getGroupId(id)))
-		{
-			
+			await this.verifyGroup(id);
             const res = await this.instance.sock?.groupParticipantsUpdate(
                this.getGroupId(id),
                  users.map(this.getWhatsAppId),
@@ -1714,16 +1894,7 @@ async groupFetchAllParticipating()
 				  
             )
             return res
-		}
-			else
-			{
-			return {
-                error: true,
-                message:
-                    'Grupo não encontrado.',
-            }
-			
-			}
+		
         } catch {
             return {
                 error: true,
@@ -1736,10 +1907,7 @@ async groupFetchAllParticipating()
  async removeuser(id, users) {
 		
         try {
-			const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		if(result.hasOwnProperty(this.getGroupId(id)))
-		{
+			await this.verifyGroup(id);
 			
             const res = await this.instance.sock?.groupParticipantsUpdate(
                 this.getGroupId(id),
@@ -1748,16 +1916,8 @@ async groupFetchAllParticipating()
 				  
             )
             return res
-		}
-			else
-			{
-			return {
-                error: true,
-                message:
-                    'Grupo não encontrado.',
-            }
+		
 			
-			}
         } catch {
             return {
                 error: true,
@@ -1770,10 +1930,7 @@ async groupFetchAllParticipating()
     async demoteAdmin(id, users) {
 		
         try {
-			const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		if(result.hasOwnProperty(this.getGroupId(id)))
-		{
+			await this.verifyGroup(id);
 			
             const res = await this.instance.sock?.groupParticipantsUpdate(
                 this.getGroupId(id),
@@ -1781,17 +1938,7 @@ async groupFetchAllParticipating()
 				  "demote"
 				  
             )
-            return res
-		}
-			else
-			{
-			return {
-                error: true,
-                message:
-                    'Grupo não encontrado.',
-            }
-			
-			}
+       
         } catch {
             return {
                 error: true,
@@ -1830,34 +1977,21 @@ async idLogado()
 		
 		}
 		
-		}
+	}
 
     async leaveGroup(id) {
 
 
         try {
-           const result =
-                await this.instance.sock?.groupFetchAllParticipating()
-		if(result.hasOwnProperty(this.getGroupId(id)))
-		{
-			 await this.instance.sock?.groupLeave(this.getGroupId(id))
+           await this.verifyGroup(id);
+			await this.instance.sock?.groupLeave(id)
             
 			 return {
                 error: false,
                 message:
                     'Saiu do grupo.',
             		}
-		}
-else
-	{
-		return {
-                error: true,
-                message:
-                    'Erro ao sair do grupo, verifique se o grupo ainda existe ou se você ainda participa do grupo!',
-            }
-		
-	}
-				
+			
         } catch (e) {
             return {
                 error: true,
@@ -1869,15 +2003,15 @@ else
 
 
     async getInviteCodeGroup(id) {
-		const to = this.getGroupId(id)
+		
         try {
-            await this.verifyGroup(to)
-            const convite =  await this.instance.sock?.groupInviteCode(to)
+           await this.verifyGroup(id);
+            const convite =  await this.instance.sock?.groupInviteCode(id)
 			const url ='https://chat.whatsapp.com/'+convite
 			return url;
 			
         } catch (e) {
-            console.log(e)
+           
             return {
                 error: true,
                 message:
@@ -1888,166 +2022,25 @@ else
 
     async getInstanceInviteCodeGroup(id) {
         try {
+			await this.verifyGroup(id);
             return await this.instance.sock?.groupInviteCode(id)
         } catch (e) {
             logger.error(e)
             logger.error('Error get invite group failed')
         }
     }
-
-    // get Chat object from db
-    async getChat(key = this.key) {
-        //let dbResult = await Chat.findOne({ key: key }).exec()
-        let ChatObj = Chats
-        return ChatObj
-    }
-
-    // create new group by application
-    async createGroupByApp(newChat) {
-        try {
-            let Chats = await this.getChat()
-            let group = {
-                id: newChat[0].id,
-                name: newChat[0].subject,
-                participant: newChat[0].participants,
-                messages: [],
-                creation: newChat[0].creation,
-                subjectOwner: newChat[0].subjectOwner,
-            }
-            Chats.push(group)
-            await this.updateDb(Chats)
-        } catch (e) {
-            logger.error(e)
-            logger.error('Error updating document failed')
-        }
-    }
-
-    async updateGroupSubjectByApp(newChat) {
-        //console.log(newChat)
-        try {
-            if (newChat[0] && newChat[0].subject) {
-                let Chats = await this.getChat()
-                Chats.find((c) => c.id === newChat[0].id).name =
-                    newChat[0].subject
-                await this.updateDb(Chats)
-            }
-        } catch (e) {
-            logger.error(e)
-            logger.error('Error updating document failed')
-        }
-    }
-
-    async updateGroupParticipantsByApp(newChat) {
-        //console.log(newChat)
-        try {
-            if (newChat && newChat.id) {
-                let Chats = await this.getChat()
-                let chat = Chats.find((c) => c.id === newChat.id)
-                let is_owner = false
-                if (chat) {
-                    if (chat.participant == undefined) {
-                        chat.participant = []
-                    }
-                    if (chat.participant && newChat.action == 'add') {
-                        for (const participant of newChat.participants) {
-                            chat.participant.push({
-                                id: participant,
-                                admin: null,
-                            })
-                        }
-                    }
-                    if (chat.participant && newChat.action == 'remove') {
-                        for (const participant of newChat.participants) {
-                            // remove group if they are owner
-                            if (chat.subjectOwner == participant) {
-                                is_owner = true
-                            }
-                            chat.participant = chat.participant.filter(
-                                (p) => p.id != participant
-                            )
-                        }
-                    }
-                    if (chat.participant && newChat.action == 'demote') {
-                        for (const participant of newChat.participants) {
-                            if (
-                                chat.participant.filter(
-                                    (p) => p.id == participant
-                                )[0]
-                            ) {
-                                chat.participant.filter(
-                                    (p) => p.id == participant
-                                )[0].admin = null
-                            }
-                        }
-                    }
-                    if (chat.participant && newChat.action == 'promote') {
-                        for (const participant of newChat.participants) {
-                            if (
-                                chat.participant.filter(
-
-                                    (p) => p.id == participant
-                                )[0]
-                            ) {
-                                chat.participant.filter(
-                                    (p) => p.id == participant
-                                )[0].admin = 'superadmin'
-                            }
-                        }
-                    }
-                    if (is_owner) {
-                        Chats = Chats.filter((c) => c.id !== newChat.id)
-                    } else {
-                        Chats.filter((c) => c.id === newChat.id)[0] = chat
-                    }
-                    await this.updateDb(Chats)
-                }
-            }
-        } catch (e) {
-            logger.error(e)
-            logger.error('Error updating document failed')
-        }
-    }
-
-   
-			
-
-
-
-
-    // update promote demote remove
-    async groupParticipantsUpdate(id, users, action) {
-        try {
-            const res = await this.instance.sock?.groupParticipantsUpdate(
-                this.getWhatsAppId(id),
-                this.parseParticipants(users),
-                action
-            )
-            return res
-        } catch (e) {
-            //console.log(e)
-            return {
-                error: true,
-                message:
-                    'unable to ' +
-                    action +
-                    ' some participants, check if you are admin in group or participants exists',
-            }
-        }
-    }
-
-    // update group settings like
-    // only allow admins to send messages
+      			
     async groupSettingUpdate(id, action) {
         try {
-			await this.verifyGroup(id)
+			await this.verifyGroup(id);
             const res = await this.instance.sock?.groupSettingUpdate(
-                this.getWhatsAppId(id),
-                action
+               id,
+               action
             )
             return {
                 error: false,
                 message:
-                    'Alteração referente a ' + action + ' Concluida',
+                   'Alteração referente a ' + action + ' Concluida',
             }
         } catch (e) {
             //console.log(e)
@@ -2062,7 +2055,7 @@ else
     async groupUpdateSubject(id, subject) {
 		
         try {
-			await this.verifyGroup(id)
+			await this.verifyGroup(id);
             const res = await this.instance.sock?.groupUpdateSubject(
                 this.getWhatsAppId(id),
                 subject
@@ -2085,9 +2078,9 @@ else
     async groupUpdateDescription(id, description) {
 		
         try {
-			await this.verifyGroup(id)
+			await this.verifyGroup(id);
             const res = await this.instance.sock?.groupUpdateDescription(
-                this.getWhatsAppId(id),
+                id,
                 description
             )
 			//console.log(res)
@@ -2108,6 +2101,7 @@ else
 
 async groupGetInviteInfo(url) {
         try {
+			await this.verifyGroup(id);
 			const codeurl = url.split('/');
 
 
@@ -2128,18 +2122,28 @@ async groupGetInviteInfo(url) {
 
 
 async groupidinfo(id) {
-    const to = this.getGroupId(id);
+    
 
     try {
-        //await this.verifyGroup(to);
-
-        const res = await Promise.race([
-            this.instance.sock?.groupMetadata(to),
-            new Promise((_, reject) => setTimeout(() => reject(), 5000))
-        ]);
-        return res;
-    } catch (e) {
+        await this.verifyGroup(id);
+        
+	    const result = await this.groupFetchAllParticipating()
+		if(result.hasOwnProperty(id))
+		{
+			
+		return  result[id];	
        
+		}
+		else
+			{
+		return {
+            error: true,
+            message: 'Grupo não existe!',
+        		};
+				
+			}
+    } catch (e) {
+      
         return {
             error: true,
             message: 'Grupo não existe',
