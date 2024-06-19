@@ -1,4 +1,4 @@
-<h2 tabindex="-1" dir="auto" data-react-autofocus="true"><a id="user-content-whatsapp-api-nodejs" class="anchor" aria-hidden="true" tabindex="-1" href="#whatsapp-api-nodejs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a>WhatsApp-hard- Api -NodeJs MultiDevice</h2>
+<h2 tabindex="-1" dir="auto" data-react-autofocus="true"><a id="user-content-whatsapp-api-nodejs" class="anchor" aria-hidden="true" tabindex="-1" href="#whatsapp-api-nodejs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a>WhatsApp-hard - Api -NodeJs MultiDevice</h2>
 <p dir="auto">Esta api é uma implementação do <a href="https://github.com/WhiskeySockets/Baileys">WhiskeySockets Baileys</a>, como um serviço RestFull Api, que controla funções do WhatsApp.<br>
 Este código tem como base principal o projeto <a href="https://github.com/salman0ansari/whatsapp-api-nodejs">Whatsapp-api-nodejs</a> que foi atualizado e melhorado com o tempo.	
 Com este código, você pode criar chats de multiserviço, bots de serviço ou qualquer outro sistema que utilize o WhatsApp. Com este código, você não precisa conhecer JavaScript para Node.js, basta iniciar o servidor e fazer as solicitações na linguagem com a qual você se sentir mais confortável.</p>
@@ -190,15 +190,12 @@ Documentação:<br>
 <br><br> Informações adicionais:<br>
 A api não usa nenhum banco de dados.<br>
 A api é multidevices e aceita vários números conectados<br>
-O consumo médio de memória varia de quantidade de instâncias.<br>
-Formato padrão dos arquivos de áudio e vídeo aceito pela Baileys sem passar por conversão: mp4 e ogg.<br>
-Caso envie arquivos fora desses formatos a api vai converter automaticamente e pode consumir recursos da máquina e o prazo de envio é relativamente maior.<br>
-Formato padrão de saída de audio:<b>MP3</b><br>
-Formato padrão de saída de video:<b>MP4</b>
- 
+O consumo médio de memória varia de quantidade de instâncias e é extremamente leve<br>
 
-
-
+<h2 tabindex="-1" dir="auto" data-react-autofocus="true"><a id="user-content-whatsapp-api-nodejs" class="anchor" aria-hidden="true" tabindex="-1" href="#whatsapp-api-nodejs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a>Manager da API</h2>
+<p>Contribua com o projeto e tenha acesso ao manager da api</p>
+<br>
+<img scr="https://i.ibb.co/YWXYvPm/manager.jpg>
 
 <br><br>
 Contribua com o projeto e receba atualizaçoes:<br>
