@@ -1426,12 +1426,27 @@ async convertemp4(file, retorno) {
     }
 }
 
-async DownloadProfile(of) {
-   of =  await this.verifyId(of);
+async DownloadProfile(of,group=false) {
+	try{
+	if(!group)
+		{
+			
+   of = await this.verifyId(of);
+		}
+	else
+		{
+	await this.verifyGroup(of);
+		}
+	
     const ppUrl = await this.instance.sock?.profilePictureUrl(of,
         'image'
     );
     return ppUrl;
+	}
+	catch(e)
+	{
+	return process.env.APP_URL+'/img/noimage.jpg'
+	}
 }
 
 async getUserStatus(of) {
