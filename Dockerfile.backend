@@ -1,0 +1,17 @@
+FROM node:latest
+
+ARG PORT
+ARG AUTO_UPDATE
+
+WORKDIR /
+
+RUN git config --global credential.helper store && \
+    git clone https://github.com/renatoiub/whatsapp-hard-api-node.git && \
+    cd whatsapp-hard-api-node && \
+    npm install
+
+EXPOSE ${PORT}/tcp
+
+CMD cd /whatsapp-hard-api-node/ && \
+if [ "$AUTO_UPDATE" = true ]; then git pull ; fi && \
+     npm start
