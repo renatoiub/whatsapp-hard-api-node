@@ -592,7 +592,7 @@ async init() {
         }
 		
     }
-    this.socketConfig.version =  [2, 3000, 1015901307];
+    this.socketConfig.version =  [2, 3000, 1021580394];
     this.socketConfig.browser = Object.values(b.browser);
 	this.socketConfig.emitOwnEvents = true;
     this.instance.sock = makeWASocket(this.socketConfig);
